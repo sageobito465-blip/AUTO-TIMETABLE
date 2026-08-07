@@ -1,0 +1,15 @@
+================ USERS ==============
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('Admin','Lecturer','Student') NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100)
+);
+
+INSERT INTO users (username, password, role, full_name, email)
+VALUES
+('admin@mapoly.edu.ng', '1234', 'Admin', 'System Administrator', 'admin@mapoly.edu.ng'),
+('john@mapoly.edu.ng', 'abcd', 'Lecturer', 'John Williams', 'john@mapoly.edu.ng'),
+('MAP/CSC/24/001', 'pass123', 'Student', 'Tama Example', '');
