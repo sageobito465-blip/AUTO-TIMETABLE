@@ -1,24 +1,20 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Admin Dashboard</title>
-</head>
+{% extends "base.html" %}
 
-<body>
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+
     <h1>Admin Dashboard</h1>
     <p>Welcome, {{ username }}!</p>
     <hr>
+
     <h2>Menu</h2>
     <ul>
-        <li>Manage Users</li>
-        <li>Manage Courses</li>
-        <li>Manage Timetable</li>
-        <li>View Timetable</li>
+        <li><a href="/admin/users">Manage Users</a></li>
+        <li><a href="/admin/comments">Lecturer Comments</a></li>
+        <li><a href="/search">Search Lecturer</a></li>
+        <li><a href="/search/course">Search Course</a></li>
         <li><a href="/logout">Logout</a></li>
-
-
-
-
     </ul>
-</body>
-</html>
+
+{% endblock %}

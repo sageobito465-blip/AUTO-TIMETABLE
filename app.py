@@ -12,7 +12,7 @@ def login_required(role):
     def login_validation(f):
 
         @wraps(f)
-        def guard():
+        def guard(*args, **kwargs):
 
             if "username" not in session:
                 return redirect("/login")
@@ -20,7 +20,7 @@ def login_required(role):
             if session["role"] != role and session["role"] != "Admin":
                 return redirect("/login")
             
-            return f()
+            return f(*args, **kwargs)
         
         return guard
     
@@ -90,14 +90,91 @@ def logout():
 @app.route("/student")
 @login_required("Student")
 def student_dashboard():
-    return "Student Dashboard"
+    username = session["username"]
+
+    cursor.execute("SELECT level FROM users WHERE username = ?", (username,))
+    student = cursor.fetchone()
+    student_level = student[0]
+
+    selected_level = request.args.get("level", student_level)
+
+    cursor.execute(
+        "SELECT course_code, course_title, level, day, start_time, end_time, lecturer, room FROM timetable WHERE level = ?",
+        (selected_level,)
+    )
+    all_classes = cursor.fetchall()
+
+    return render_template("student.html", username=username, all_classes=all_classes, selected_level=selected_level)
+# End of student session or tab.
+
+
 
 # Lecturer Dashboard
 @app.route("/lecturer")
 @login_required("Lecturer")
 def lecturer_dashboard():
-    return "Lecturer Dashboard"
+    username = session["username"]
 
+    cursor.execute("SELECT full_name FROM users WHERE username = ?", (username,))
+    lecturer = cursor.fetchone()
+    lecturer_name = lecturer[0]
+
+    cursor.execute(
+        "SELECT course_code, course_title, level, day, start_time, end_time, room FROM timetable WHERE lecturer = ?",
+        (lecturer_name,)
+    )
+    all_classes = cursor.fetchall()
+
+    return render_template("lecturer.html", username=username, lecturer_name=lecturer_name, all_classes=all_classes)
+
+# Lecturer comment
+@app.route("/lecturer/comment", methods=["POST"])
+@login_required("Lecturer")
+def post_comment():
+    username = session["username"]
+    message = request.form["message"]
+
+    cursor.execute(
+        "INSERT INTO comments (lecturer_username, message) VALUES (?, ?)",
+        (username, message)
+    )
+    connection.commit()
+
+    return redirect("/lecturer")
+
+
+# Search for lecturer 
+@app.route("/search")
+def search_lecturer():
+    if "username" not in session:
+        return redirect("/login")
+
+    query = request.args.get("query", "")
+
+    cursor.execute(
+        "SELECT course_code, course_title, level, day, start_time, end_time, lecturer, room FROM timetable WHERE lecturer LIKE ?",
+        (f"%{query}%",)
+    )
+    results = cursor.fetchall()
+
+    return render_template("search.html", results=results, query=query)
+# lecturer section
+
+#Search for courses
+@app.route("/search/course")
+def search_course():
+    if "username" not in session:
+        return redirect("/login")
+
+    query = request.args.get("query", "")
+
+    cursor.execute(
+        "SELECT course_code, course_title, level, day, start_time, end_time, lecturer, room FROM timetable WHERE course_code LIKE ? OR course_title LIKE ?",
+        (f"%{query}%", f"%{query}%")
+    )
+    results = cursor.fetchall()
+
+    return render_template("search_course.html", results=results, query=query)
 
 # Admin Dashboard
 @app.route("/admin")
@@ -120,16 +197,20 @@ def register_user():
         full_name = request.form["full_name"]
         email = request.form["email"]
         role = request.form["role"]
+        level = request.form["level"]
 
         cursor.execute(
-            "INSERT INTO users (username, password, role, full_name, email) VALUES(?, ?, ?, ?, ?)",
-            (username, password, role, full_name, email)
+            "INSERT INTO users (username, password, role, full_name, email, level) VALUES(?, ?, ?, ?, ?, ?)",
+            (username, password, role, full_name, email, level)
         )
         connection.commit()
 
         return "user registered succesfully!"
+    
+    return render_template("register.html", message="")
+    
 
-# List of Users 
+# List of Users function
 @app.route("/admin/users")
 @login_required("Admin")
 def manage_users():
@@ -138,8 +219,52 @@ def manage_users():
 
     return render_template("users.html", all_users=all_users)
 
-    
-    return render_template("register.html", message="")
+# Delete user function
+@app.route("/admin/delete/<int:user_id>")
+@login_required("Admin")
+def delete_user(user_id):
+    cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    connection.commit()
+
+    return redirect("/admin/users")
+
+# Edit User Function for Admin
+@app.route("/admin/edit/<int:user_id>", methods=["GET", "POST"])
+@login_required("Admin")
+def edit_user(user_id):
+
+    if request.method =="POST":
+        username = request.form["username"]
+        full_name = request.form["full_name"]
+        role = request.form["role"]
+        email = request.form["email"]
+        level = request.form["level"]
+
+        cursor.execute(
+            "UPDATE users SET username = ?, full_name = ?, email = ?, role = ?, level = ? WHERE id = ?",
+            (username, full_name, email, role, level, user_id)
+        )
+        connection.commit()
+
+        return redirect("/admin/users")
+
+
+    cursor.execute("SELECT id, username, full_name, role, email, level FROM users WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+
+    return render_template("edit.html", user=user)
+# Admin view comments
+@app.route("/admin/comments")
+@login_required("Admin")
+def view_comments():
+    cursor.execute("SELECT lecturer_username, message, created_at FROM comments ORDER BY created_at DESC")
+    all_comments = cursor.fetchall()
+
+    return render_template("comments.html", all_comments=all_comments)
+
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

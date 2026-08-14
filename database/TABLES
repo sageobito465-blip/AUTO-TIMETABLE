@@ -7,9 +7,36 @@ CREATE TABLE users (
     full_name VARCHAR(100) NOT NULL,
     email VARCHAR(100)
 );
-
+============== INSERTING SAMPLES =============
 INSERT INTO users (username, password, role, full_name, email)
 VALUES
 ('admin@mapoly.edu.ng', '1234', 'Admin', 'System Administrator', 'admin@mapoly.edu.ng'),
 ('john@mapoly.edu.ng', 'abcd', 'Lecturer', 'John Williams', 'john@mapoly.edu.ng'),
 ('MAP/CSC/24/001', 'pass123', 'Student', 'Tama Example', '');
+
+============ TIMETABLE ==========
+CREATE TABLE timetable (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    course_code VARCHAR(20) NOT NULL,
+    course_title VARCHAR(100) NOT NULL,
+    level VARCHAR(20) NOT NULL,
+    day VARCHAR(20) NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    lecturer VARCHAR(100),
+    room VARCHAR(100)
+);
+======== INSERTING SAMPLES =======
+INSERT INTO timetable (course_code, course_title, level, day, start_time, end_time, lecturer, room)
+VALUES
+('CSC201', 'Data Structures', 'ND2', 'Monday', '09:00:00', '11:00:00', 'John Williams', 'LT1'),
+('CSC203', 'Database Systems', 'ND2', 'Tuesday', '10:00:00', '12:00:00', 'John Williams', 'LT2'),
+('CSC301', 'Software Engineering', 'HND1', 'Wednesday', '13:00:00', '15:00:00', 'Jane Doe', 'LT3');
+
+========== COMMENTS =========
+CREATE TABLE comments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    lecturer_username VARCHAR(100) NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

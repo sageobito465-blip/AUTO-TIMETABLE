@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lecturer Comments</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <h1>Lecturer Comments</h1>
+
+    <table border="1">
+        <tr>
+            <th>Lecturer</th>
+            <th>Message</th>
+            <th>Date</th>
+        </tr>
+
+        {% for comment in all_comments %}
+        <tr>
+            <td>{{ comment[0] }}</td>
+            <td>{{ comment[1] }}</td>
+            <td>{{ comment[2] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <br>
+    <a href="/admin">Back to Admin Dashboard</a>
+
+</body>
+</html>

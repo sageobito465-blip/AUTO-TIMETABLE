@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Manage Users</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
@@ -13,6 +14,7 @@
             <th>Full Name</th>
             <th>Role</th>
             <th>Email</th>
+            <th>Actions</th>
         </tr>
 
         {% for user in all_users %}
@@ -22,13 +24,16 @@
             <td>{{user[2]}}</td>
             <td>{{user[3]}}</td>
             <td>{{user[4]}}</td>
+            <td>
+                <a href="/admin/edit/{{ user[0]}}">Edit</a>
+                <a href="/admin/delete/{{ user[0]}}">Delete</a>
+            </td>
         </tr>
         {% endfor %}
     </table>
 
     <br>
-    <a href="/admin">Back to ADmin Dashboard</a>
-
+    <a href="/admin">Back to Admin Dashboard</a>
 
 
 </body>
