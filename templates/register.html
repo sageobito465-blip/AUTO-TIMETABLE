@@ -1,47 +1,69 @@
+{% extends "base.html" %}
 
-</DOCTYPE html>
-<html>
-<head>
-    <title>Register New User</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <h1>Register New User</h1>
-    <p>{{message}}</p>
-    <form method="POST" action="/admin/register">
-         <label>Username:</label><br>
-         <input type="text" name="username"><br><br>
+{% block title %}Register New User{% endblock %}
 
-         <label>Temporary Password:</label><br>
-         <input type="text" name="password"><br><br>
+{% block content %}
 
-         <label>Full Name:</label><br>
-         <input type="text" name="full_name"><br><br>
-            
-         <label>Email:</label><br>
-         <input type="text" name="email"><br><br>
+    <div class="form-card">
+        <div class="form-card-header">
+            <p class="title">Register New User</p>
+            <p class="subtitle">Create a login for a student, lecturer, or admin</p>
+        </div>
 
-         <label>Role:</label><br>
-         <select name="role">
-         <option value="Student">Student</option>
-         <option value="Lecturer">Lecturer</option>
-         <option value="Admin">Admin</option>
-         </select><br><br>
+        <div class="form-card-body">
 
-         <label>Level (Students only):</label><br>
-         <select name="level">
-            <option value="">N/A</option>
-            <option value="ND1">ND1</option>
-            <option value="ND2">ND2</option>
-            <option value="HND1">HND1</option>
-            <option value="HND2">HND2</option>
-         </select><br><br>
+            {% if message %}
+            <p class="login-message">{{ message }}</p>
+            {% endif %}
 
-         <button type="submit">Register</button>
-    </form>
-   
+            <form method="POST" action="/admin/register">
 
+                <div class="field-group course two-col">
+                    <div>
+                        <label>Username</label>
+                        <input type="text" name="username" placeholder="e.g. student matric no or email">
+                    </div>
+                    <div>
+                        <label>Password</label>
+                        <input type="text" name="password" placeholder="Password">
+                    </div>
+                </div>
 
-</body>
+                <div class="field-group schedule two-col">
+                    <div>
+                        <label>Full Name</label>
+                        <input type="text" name="full_name" placeholder="Full name">
+                    </div>
+                    <div>
+                        <label>Email</label>
+                        <input type="text" name="email" placeholder="Email address">
+                    </div>
+                </div>
 
-</html>
+                <div class="field-group staff two-col">
+                    <div>
+                        <label>Role</label>
+                        <select name="role">
+                            <option value="Student">Student</option>
+                            <option value="Lecturer">Lecturer</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Level (Students only)</label>
+                        <select name="level">
+                            <option value="">N/A</option>
+                            <option value="ND1">ND1</option>
+                            <option value="ND2">ND2</option>
+                            <option value="HND1">HND1</option>
+                            <option value="HND2">HND2</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit">Register</button>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}

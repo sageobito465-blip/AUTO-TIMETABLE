@@ -40,3 +40,27 @@ CREATE TABLE comments (
     message TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+
+INSERT INTO timetable (course_code, session_type, programme, level, day, start_time, end_time, venue, lecturer_name, lecturer_title)
+VALUES
+('COM223', 'Practical', NULL, 'ND2', 'Monday', '10:00:00', '12:00:00', 'LAB 12', 'Mr Adebesin', 'T'),
+('COM223', 'Lecture', NULL, 'ND2', 'Monday', '12:00:00', '14:00:00', 'ICT RM 8', 'Engineering Dept', 'L'),
+('SEMINAR & PROJECT', 'Lecture', NULL, 'ND2', 'Monday', '14:00:00', '16:00:00', NULL, NULL, NULL),
+
+('COM221', 'Lecture', NULL, 'ND2', 'Tuesday', '08:00:00', '10:00:00', 'COM RM 2', 'Mr Raji', 'L'),
+('COM228', 'Lecture', NULL, 'ND2', 'Tuesday', '10:00:00', '12:00:00', 'LAB 11', 'Dr Orunsolu', 'L'),
+('COM224', 'Practical', NULL, 'ND2', 'Tuesday', '12:00:00', '14:00:00', 'LAB 11', 'Mr Olatunji', 'T'),
+
+('COM225', 'Practical', NULL, 'ND2', 'Wednesday', '08:00:00', '10:00:00', 'LAB 11', 'Mr Paul', 'T'),
+('COM227', 'Lecture', NULL, 'ND2', 'Wednesday', '10:00:00', '12:00:00', 'ICT RM 7', 'Mr Salawu', 'L'),
+('COM221', 'Practical', NULL, 'ND2', 'Wednesday', '14:00:00', '16:00:00', 'LAB 11', 'Mr Paul', 'T'),
+
+('COM224', 'Lecture', NULL, 'ND2', 'Thursday', '08:00:00', '10:00:00', 'SCI COM RM 1A', 'Mr Amokun', 'L'),
+('GNS202', 'Lecture', NULL, 'ND2', 'Thursday', '10:00:00', '12:00:00', 'ICT RM 7', 'Mr Faleti', 'L'),
+('COM226', 'Practical', NULL, 'ND2', 'Thursday', '12:00:00', '14:00:00', 'LAB 10', 'Mr Moses', 'T'),
+
+('COM225', 'Lecture', NULL, 'ND2', 'Friday', '08:00:00', '10:00:00', 'COM RM 2', 'Mr Odekunle', 'L'),
+('SEMINAR & PROJECT', 'Lecture', NULL, 'ND2', 'Friday', '10:00:00', '12:00:00', NULL, NULL, NULL),
+('JUM''AT SERVICE', 'Lecture', NULL, 'ND2', 'Friday', '12:00:00', '14:00:00', NULL, NULL, NULL),
+('COM226', 'Lecture', NULL, 'ND2', 'Friday', '14:00:00', '16:00:00', 'SCI COM RM 1A', 'Mr Akinlade', 'L');

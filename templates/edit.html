@@ -1,39 +1,60 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Edit User</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <h1>Edit User</h1>
+{% extends "base.html" %}
 
-    <form method="POST" action="/admin/edit/{{ user[0] }}">
-        <label>Username:</label><br>
-        <input type="text" name="username" value="{{ user[1] }}"><br><br>
+{% block title %}Edit User{% endblock %}
 
-        <label>Full Name:</label><br>
-        <input type="text" name="full_name" value="{{ user[2] }}"><br><br>
+{% block content %}
 
-        <label>Email:</label><br>
-        <input type="text" name="email" value="{{ user[4] }}"><br><br>
+    <div class="form-card">
+        <div class="form-card-header">
+            <p class="title">Edit User</p>
+            <p class="subtitle">Update this user's details or role</p>
+        </div>
 
-        <label>Role:</label><br>
-        <select name="role">
-            <option value="Student" {% if user[3] == "Student" %}selected{% endif %}>Student</option>
-            <option value="Lecturer" {% if user[3] == "Lecturer" %}selected{% endif %}>Lecturer</option>
-            <option value="Admin" {% if user[3] == "Admin" %}selected{% endif %}>Admin</option>
-        </select><br><br>
+        <div class="form-card-body">
+            <form method="POST" action="/admin/edit/{{ user[0] }}">
 
-       <label>Level (Students only):</label><br>
-<select name="level">
-    <option value="" {% if user[5] == None %}selected{% endif %}>N/A</option>
-    <option value="ND1" {% if user[5] == "ND1" %}selected{% endif %}>ND1</option>
-    <option value="ND2" {% if user[5] == "ND2" %}selected{% endif %}>ND2</option>
-    <option value="HND1" {% if user[5] == "HND1" %}selected{% endif %}>HND1</option>
-    <option value="HND2" {% if user[5] == "HND2" %}selected{% endif %}>HND2</option>
-</select><br><br>
+                <div class="field-group course two-col">
+                    <div>
+                        <label>Username</label>
+                        <input type="text" name="username" value="{{ user[1] }}">
+                    </div>
+                    <div>
+                        <label>Full Name</label>
+                        <input type="text" name="full_name" value="{{ user[2] }}">
+                    </div>
+                </div>
 
-        <button type="submit">Save Changes</button>
-    </form>
-</body>
-</html>
+                <div class="field-group schedule two-col">
+                    <div>
+                        <label>Email</label>
+                        <input type="text" name="email" value="{{ user[4] }}">
+                    </div>
+                    <div>
+                        <label>Role</label>
+                        <select name="role">
+                            <option value="Student" {% if user[3] == "Student" %}selected{% endif %}>Student</option>
+                            <option value="Lecturer" {% if user[3] == "Lecturer" %}selected{% endif %}>Lecturer</option>
+                            <option value="Admin" {% if user[3] == "Admin" %}selected{% endif %}>Admin</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field-group staff two-col">
+                    <div>
+                        <label>Level (Students only)</label>
+                        <select name="level">
+                            <option value="" {% if user[5] == None %}selected{% endif %}>N/A</option>
+                            <option value="ND1" {% if user[5] == "ND1" %}selected{% endif %}>ND1</option>
+                            <option value="ND2" {% if user[5] == "ND2" %}selected{% endif %}>ND2</option>
+                            <option value="HND1" {% if user[5] == "HND1" %}selected{% endif %}>HND1</option>
+                            <option value="HND2" {% if user[5] == "HND2" %}selected{% endif %}>HND2</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}

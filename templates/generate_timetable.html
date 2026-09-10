@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Generate Timetable{% endblock %}
+
+{% block content %}
+
+    <div class="form-card">
+        <div class="form-card-header">
+            <p class="title">Generate Timetable</p>
+            <p class="subtitle">Automatically build a conflict-free schedule for one level</p>
+        </div>
+
+        <div class="form-card-body">
+
+            {% if message %}
+            <p class="login-message">{{ message }}</p>
+            {% endif %}
+
+            <form method="POST" action="/admin/timetable/generate">
+                <div class="field-group schedule two-col">
+                    <div>
+                        <label>Level</label>
+                        <select name="level">
+                            <option value="ND1">ND1</option>
+                            <option value="ND2">ND2</option>
+                            <option value="HND1">HND1</option>
+                            <option value="HND2">HND2</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Programme (HND only)</label>
+                        <select name="programme">
+                            <option value="">N/A</option>
+                            <option value="NCC">NCC</option>
+                            <option value="SWD">SWD</option>
+                        </select>
+                    </div>
+                </div>
+
+                <p style="font-size: 12px; color: #e74c3c;">
+                    Warning: this will replace any existing timetable entries for the selected level.
+                </p>
+
+                <button type="submit">Generate</button>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}

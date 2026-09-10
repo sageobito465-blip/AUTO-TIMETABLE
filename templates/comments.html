@@ -1,11 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Lecturer Comments</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+{% extends "base.html" %}
 
-<body>
+{% block title %}Lecturer Comments{% endblock %}
+
+{% block content %}
+
     <h1>Lecturer Comments</h1>
 
     <table border="1">
@@ -27,5 +25,4 @@
     <br>
     <a href="/admin">Back to Admin Dashboard</a>
 
-</body>
-</html>
+{% endblock %}

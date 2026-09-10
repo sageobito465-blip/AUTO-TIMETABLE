@@ -1,60 +1,50 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Student Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+{% extends "base.html" %}
 
-<body>
-    <h1>Student Dashboard</h1>
-    <p>Welcome, {{ username }}!</p>
+{% block title %}Student Dashboard{% endblock %}
 
-    <a href="/search">Search Lecturer</a>
-    <a href="/search/course">Search Course</a>
+{% block content %}
 
-    <h2>General Timetable</h2>
+    <div class="form-card-header" style="border-radius: 8px;">
+        <p class="title">Welcome, {{ username }}</p>
+        <p class="subtitle">Viewing timetable for {{ selected_level }}</p>
+    </div>
 
-    <h2>Viewing Timetable For: {{ selected_level }}</h2>
+    <div class="form-card" style="margin-top: 16px;">
+        <div class="form-card-body">
+            <form method="GET" action="/student">
+                <label>Switch Level</label>
+                <select name="level">
+                    <option value="ND1" {% if selected_level == "ND1" %}selected{% endif %}>ND1</option>
+                    <option value="ND2" {% if selected_level == "ND2" %}selected{% endif %}>ND2</option>
+                    <option value="HND1" {% if selected_level == "HND1" %}selected{% endif %}>HND1</option>
+                    <option value="HND2" {% if selected_level == "HND2" %}selected{% endif %}>HND2</option>
+                </select>
+                <button type="submit">View</button>
+            </form>
+        </div>
+    </div>
 
-<form method="GET" action="/student">
-    <label>Switch Level:</label>
-    <select name="level">
-        <option value="ND1" {% if selected_level == "ND1" %}selected{% endif %}>ND1</option>
-        <option value="ND2" {% if selected_level == "ND2" %}selected{% endif %}>ND2</option>
-        <option value="HND1" {% if selected_level == "HND1" %}selected{% endif %}>HND1</option>
-        <option value="HND2" {% if selected_level == "HND2" %}selected{% endif %}>HND2</option>
-    </select>
-    <button type="submit">View</button>
-</form>
-
-    <table border="1">
-        <tr>
-            <th>Course Code</th>
-            <th>Course Title</th>
-            <th>Level</th>
-            <th>Day</th>
-            <th>Start Time</th>
-            <th>End Time</th>
-            <th>Lecturer</th>
-            <th>Room</th>
-        </tr>
-
-        {% for class in all_classes %}
-        <tr>
-            <td>{{ class[0] }}</td>
-            <td>{{ class[1] }}</td>
-            <td>{{ class[2] }}</td>
-            <td>{{ class[3] }}</td>
-            <td>{{ class[4] }}</td>
-            <td>{{ class[5] }}</td>
-            <td>{{ class[6] }}</td>
-            <td>{{ class[7] }}</td>
-        </tr>
+    <div class="timetable-grid">
+        {% for day in days %}
+        <div class="day-row">
+            <div class="day-label">{{ day }}</div>
+            <div class="day-slots">
+                {% for slot in time_slots %}
+                {% set class_row = grid[(day, slot)] %}
+                <div class="slot-cell">
+                    <div class="slot-time">{{ slot[0][:5] }} - {{ slot[1][:5] }}</div>
+                    {% if class_row %}
+                        <strong>{{ class_row[0] }}</strong>{% if class_row[1] == "Practical" %} (P){% endif %}<br>
+                        {% if class_row[5] %}<span class="slot-venue">{{ class_row[5] }}</span><br>{% endif %}
+                        {% if class_row[6] %}<span class="slot-lecturer">{{ class_row[6] }}</span>{% endif %}
+                    {% else %}
+                        <span class="slot-empty">-</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
         {% endfor %}
-    </table>
+    </div>
 
-    <br>
-    <a href="/logout">Logout</a>
-
-</body>
-</html>
+{% endblock %}

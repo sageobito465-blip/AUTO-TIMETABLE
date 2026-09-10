@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Bulk Register{% endblock %}
+
+{% block content %}
+
+    <div class="form-card">
+        <div class="form-card-header">
+            <p class="title">Bulk Register Users</p>
+            <p class="subtitle">Upload a CSV file to create many accounts at once</p>
+        </div>
+
+        <div class="form-card-body">
+
+            {% if message %}
+            <p class="login-message">{{ message }}</p>
+            {% endif %}
+
+            <p style="font-size: 13px; color: #555;">
+                CSV columns needed: <code>username, password, full_name, email, level, role, programme</code>
+            </p>
+
+            <form method="POST" action="/admin/bulk-register" enctype="multipart/form-data">
+                <input type="file" name="csv_file" accept=".csv">
+                <button type="submit">Upload and Register</button>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}

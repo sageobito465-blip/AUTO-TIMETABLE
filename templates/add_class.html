@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Class{% endblock %}
+
+{% block content %}
+
+    <div class="form-card">
+        <div class="form-card-header">
+            <p class="title">Add New Class</p>
+            <p class="subtitle">Fill in the course and schedule details</p>
+        </div>
+
+        <div class="form-card-body">
+            <form method="POST" action="/admin/timetable/add">
+
+                <div class="field-group course two-col">
+                    <div>
+                        <label>Course Code / Label</label>
+                        <input type="text" name="course_code" placeholder="e.g. COM111 or SEMINAR & PROJECT">
+                    </div>
+                    <div>
+                        <label>Session Type</label>
+                        <select name="session_type">
+                            <option value="Lecture">Lecture</option>
+                            <option value="Practical">Practical</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field-group schedule four-col">
+                    <div>
+                        <label>Level</label>
+                        <select name="level">
+                            <option value="ND1">ND1</option>
+                            <option value="ND2">ND2</option>
+                            <option value="HND1">HND1</option>
+                            <option value="HND2">HND2</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Programme (HND only)</label>
+                        <select name="programme">
+                            <option value="">N/A</option>
+                            <option value="NCC">NCC</option>
+                            <option value="SWD">SWD</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Day</label>
+                        <select name="day">
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Start Time</label>
+                        <select name="start_time">
+                            <option value="08:00">8:00</option>
+                            <option value="10:00">10:00</option>
+                            <option value="12:00">12:00</option>
+                            <option value="14:00">14:00</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field-group schedule two-col">
+                    <div>
+                        <label>End Time</label>
+                        <select name="end_time">
+                            <option value="10:00">10:00</option>
+                            <option value="12:00">12:00</option>
+                            <option value="14:00">14:00</option>
+                            <option value="16:00">16:00</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Venue</label>
+                        <input type="text" name="venue" placeholder="e.g. LAB 11, COM RM 2">
+                    </div>
+                </div>
+
+                <div class="field-group staff two-col">
+                    <div>
+                        <label>Lecturer Name</label>
+                        <input type="text" name="lecturer_name" placeholder="e.g. Mr. Adebesin">
+                    </div>
+                    <div>
+                        <label>Lecturer Title</label>
+                        <select name="lecturer_title">
+                            <option value="L">L (Lecturer)</option>
+                            <option value="T">T (Technologist)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit">Add Class</button>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}

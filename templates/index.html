@@ -1,11 +1,25 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>AUTOMATED-TIMETABLE</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <h1>Welcome to Auto-Timetable</h1>
-    <p>Computer Sciene Department Timetable Management System</p>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}AUTOMATED-TIMETABLE{% endblock %}
+
+{% block content %}
+
+    <div class="hero">
+        <p class="eyebrow">Computer Science Department</p>
+        <h1>Auto-Timetable</h1>
+        <p class="tagline">One place to view, manage, and search the department's class schedule.</p>
+        <a href="/login" class="login-button">Log in</a>
+    </div>
+
+    <div class="role-cards">
+        <div class="role-card">
+            <h3>Students</h3>
+            <p>View your level's timetable and switch to check other levels.</p>
+        </div>
+        <div class="role-card">
+            <h3>Lecturers</h3>
+            <p>See your classes and flag issues directly to the admin office.</p>
+        </div>
+    </div>
+
+{% endblock %}

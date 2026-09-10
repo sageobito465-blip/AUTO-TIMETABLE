@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Class{% endblock %}
+
+{% block content %}
+
+    <div class="form-card">
+        <div class="form-card-header">
+            <p class="title">Edit Class</p>
+            <p class="subtitle">Update this timetable entry</p>
+        </div>
+
+        <div class="form-card-body">
+            <form method="POST" action="/admin/timetable/edit/{{ class_data[0] }}">
+
+                <div class="field-group course two-col">
+                    <div>
+                        <label>Course Code / Label</label>
+                        <input type="text" name="course_code" value="{{ class_data[1] }}">
+                    </div>
+                    <div>
+                        <label>Session Type</label>
+                        <select name="session_type">
+                            <option value="Lecture" {% if class_data[2] == "Lecture" %}selected{% endif %}>Lecture</option>
+                            <option value="Practical" {% if class_data[2] == "Practical" %}selected{% endif %}>Practical</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field-group schedule four-col">
+                    <div>
+                        <label>Programme (HND only)</label>
+                        <select name="programme">
+                            <option value="" {% if class_data[3] == "" %}selected{% endif %}>N/A</option>
+                            <option value="NCC" {% if class_data[3] == "NCC" %}selected{% endif %}>NCC</option>
+                            <option value="SWD" {% if class_data[3] == "SWD" %}selected{% endif %}>SWD</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Level</label>
+                        <select name="level">
+                            <option value="ND1" {% if class_data[4] == "ND1" %}selected{% endif %}>ND1</option>
+                            <option value="ND2" {% if class_data[4] == "ND2" %}selected{% endif %}>ND2</option>
+                            <option value="HND1" {% if class_data[4] == "HND1" %}selected{% endif %}>HND1</option>
+                            <option value="HND2" {% if class_data[4] == "HND2" %}selected{% endif %}>HND2</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Day</label>
+                        <select name="day">
+                            <option value="Monday" {% if class_data[5] == "Monday" %}selected{% endif %}>Monday</option>
+                            <option value="Tuesday" {% if class_data[5] == "Tuesday" %}selected{% endif %}>Tuesday</option>
+                            <option value="Wednesday" {% if class_data[5] == "Wednesday" %}selected{% endif %}>Wednesday</option>
+                            <option value="Thursday" {% if class_data[5] == "Thursday" %}selected{% endif %}>Thursday</option>
+                            <option value="Friday" {% if class_data[5] == "Friday" %}selected{% endif %}>Friday</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Start Time</label>
+                        <select name="start_time">
+                            <option value="08:00" {% if class_data[6] == "08:00" %}selected{% endif %}>8:00</option>
+                            <option value="10:00" {% if class_data[6] == "10:00" %}selected{% endif %}>10:00</option>
+                            <option value="12:00" {% if class_data[6] == "12:00" %}selected{% endif %}>12:00</option>
+                            <option value="14:00" {% if class_data[6] == "14:00" %}selected{% endif %}>14:00</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field-group schedule two-col">
+                    <div>
+                        <label>End Time</label>
+                        <select name="end_time">
+                            <option value="10:00" {% if class_data[7] == "10:00" %}selected{% endif %}>10:00</option>
+                            <option value="12:00" {% if class_data[7] == "12:00" %}selected{% endif %}>12:00</option>
+                            <option value="14:00" {% if class_data[7] == "14:00" %}selected{% endif %}>14:00</option>
+                            <option value="16:00" {% if class_data[7] == "16:00" %}selected{% endif %}>16:00</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Venue</label>
+                        <input type="text" name="venue" value="{{ class_data[8] }}">
+                    </div>
+                </div>
+
+                <div class="field-group staff two-col">
+                    <div>
+                        <label>Lecturer Name</label>
+                        <input type="text" name="lecturer_name" value="{{ class_data[9] }}">
+                    </div>
+                    <div>
+                        <label>Lecturer Title</label>
+                        <select name="lecturer_title">
+                            <option value="L" {% if class_data[10] == "L" %}selected{% endif %}>L (Lecturer)</option>
+                            <option value="T" {% if class_data[10] == "T" %}selected{% endif %}>T (Technologist)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}

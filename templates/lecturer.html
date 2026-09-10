@@ -1,52 +1,60 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Lecturer Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+{% extends "base.html" %}
 
-<body>
-    <h1>Lecturer Dashboard</h1>
-    <p>Welcome, {{ lecturer_name }}!</p>
+{% block title %}Lecturer Dashboard{% endblock %}
 
-    <a href="/search">Search Lecturer</a>
-    <a href="/search/course">Search Course</a>
-    
-    <h2>Leave a Comment</h2>
-<form method="POST" action="/lecturer/comment">
-    <textarea name="message" rows="4" cols="40" placeholder="Write your comment..."></textarea><br><br>
-    <button type="submit">Submit Comment</button>
-</form>
+{% block content %}
 
+    <div class="form-card-header" style="border-radius: 8px;">
+        <p class="title">Welcome, {{ lecturer_name }}</p>
+        <p class="subtitle">{{ all_classes|length }} classes assigned to you</p>
+    </div>
 
-    <h2>Your Classes</h2>
+    <div class="form-card" style="margin-top: 16px;">
+        <div class="form-card-header">
+            <p class="title" style="font-size: 14px;">Leave a Comment</p>
+        </div>
+        <div class="form-card-body">
+            <form method="POST" action="/lecturer/comment">
+                <textarea name="message" rows="4" style="width: 100%; box-sizing: border-box; border-radius: 6px; border: 1px solid #ccc; padding: 8px;" placeholder="Write your comment..."></textarea><br><br>
+                <button type="submit">Submit Comment</button>
+            </form>
+        </div>
+    </div>
 
     <table border="1">
         <tr>
             <th>Course Code</th>
-            <th>Course Title</th>
+            <th>Type</th>
             <th>Level</th>
             <th>Day</th>
             <th>Start Time</th>
             <th>End Time</th>
-            <th>Room</th>
+            <th>Venue</th>
+            <th>Title</th>
         </tr>
 
         {% for class in all_classes %}
         <tr>
             <td>{{ class[0] }}</td>
             <td>{{ class[1] }}</td>
-            <td>{{ class[2] }}</td>
+            <td>
+                {% if class[2] == "ND1" %}
+                    <span class="badge badge-nd1">ND1</span>
+                {% elif class[2] == "ND2" %}
+                    <span class="badge badge-nd2">ND2</span>
+                {% elif class[2] == "HND1" %}
+                    <span class="badge badge-hnd1">HND1</span>
+                {% elif class[2] == "HND2" %}
+                    <span class="badge badge-hnd2">HND2</span>
+                {% endif %}
+            </td>
             <td>{{ class[3] }}</td>
             <td>{{ class[4] }}</td>
             <td>{{ class[5] }}</td>
             <td>{{ class[6] }}</td>
+            <td>{{ class[7] }}</td>
         </tr>
         {% endfor %}
     </table>
 
-    <br>
-    <a href="/logout">Logout</a>
-
-</body>
-</html>
+{% endblock %}

@@ -4,17 +4,39 @@
 
 {% block content %}
 
-    <h1>Admin Dashboard</h1>
-    <p>Welcome, {{ username }}!</p>
-    <hr>
+    <div class="form-card-header" style="border-radius: 8px;">
+        <p class="title">Welcome, {{ username }}</p>
+        <p class="subtitle">Here's what's happening in the system</p>
+    </div>
 
-    <h2>Menu</h2>
-    <ul>
-        <li><a href="/admin/users">Manage Users</a></li>
-        <li><a href="/admin/comments">Lecturer Comments</a></li>
-        <li><a href="/search">Search Lecturer</a></li>
-        <li><a href="/search/course">Search Course</a></li>
-        <li><a href="/logout">Logout</a></li>
-    </ul>
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="number">{{ total_users }}</div>
+            <div class="label">Total Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">{{ total_classes }}</div>
+            <div class="label">Timetable Entries</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">{{ total_comments }}</div>
+            <div class="label">Lecturer Comments</div>
+        </div>
+    </div>
+
+    <div class="shortcut-row">
+        <a href="/admin/register" class="shortcut-card">
+            <h4>Register New User</h4>
+            <p>Create a login for a student, lecturer, or admin</p>
+        </a>
+        <a href="/admin/timetable/add" class="shortcut-card">
+            <h4>Add New Class</h4>
+            <p>Add a new entry to the timetable</p>
+        </a>
+        <a href="/admin/comments" class="shortcut-card">
+            <h4>View Comments</h4>
+            <p>See feedback and issues raised by lecturers</p>
+        </a>
+    </div>
 
 {% endblock %}
