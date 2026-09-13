@@ -11,12 +11,19 @@ from flask import Flask, render_template, request, redirect, session
 from database import connection, cursor
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
+import csv
+import io
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # reads the .env file and loads its values into the environment
 
 app = Flask(__name__)
 
 # This secret key is needed so Flask can safely remember who is logged in.
-# In a real deployed app, this should be a long random value, not plain text.
-app.secret_key = "auto_timetable_key"
+# It's stored in .env (not committed to GitHub) rather than hardcoded here.
+app.secret_key = os.getenv("SECRET_KEY")
+
 
 # ============================================================
 # ACCESS CONTROL
@@ -124,7 +131,7 @@ def logout():
 
 # Takes a plain list of classes and arranges them into a
 # day + time-slot grid, like a weekly timetable on a wall.
-# Used by the /timetable/grid page.
+# Used by both /student and /timetable/grid.
 def build_timetable_grid(all_classes):
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
     time_slots = [
@@ -156,8 +163,8 @@ def build_timetable_grid(all_classes):
 # STUDENT
 # ============================================================
 
-# Shows the logged-in student's timetable, filtered to their own level.
-# A dropdown on the page lets them switch and view a different level too.
+# Shows the logged-in student's timetable as a day x time-slot grid,
+# filtered to their own level. A dropdown lets them switch levels too.
 @app.route("/student")
 @login_required("Student")
 def student_dashboard():
@@ -187,7 +194,6 @@ def student_dashboard():
         time_slots=time_slots,
         selected_level=selected_level
     )
-# End of student session or tab.
 
 
 # ============================================================
@@ -277,11 +283,10 @@ def search_course():
     results = cursor.fetchall()
 
     return render_template("search_course.html", results=results, query=query)
-# lecturer section
 
 
 # ============================================================
-# WEEKLY GRID VIEW (day x time-slot layout, matches the paper timetable)
+# WEEKLY GRID VIEW (view any level's timetable, not just your own)
 # ============================================================
 
 @app.route("/timetable/grid")
@@ -309,6 +314,182 @@ def timetable_grid():
         time_slots=time_slots,
         level=level
     )
+
+
+# ============================================================
+# ADMIN - DASHBOARD
+# ============================================================
+
+# Admin's landing page - shows quick numbers and shortcuts
+@app.route("/admin")
+@login_required("Admin")
+def admin_dashboard():
+    username = session["username"]
+
+    # Count how many users, timetable entries, and comments exist,
+    # just to display as quick stats on the dashboard
+    cursor.execute("SELECT COUNT(*) FROM users")
+    total_users = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM timetable")
+    total_classes = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM comments")
+    total_comments = cursor.fetchone()[0]
+
+    return render_template(
+        "admin.html",
+        username=username,
+        total_users=total_users,
+        total_classes=total_classes,
+        total_comments=total_comments
+    )
+
+
+# ============================================================
+# ADMIN - USER MANAGEMENT
+# ============================================================
+
+# Creates a new Student, Lecturer, or Admin account (one at a time)
+@app.route("/admin/register", methods=["GET", "POST"])
+@login_required("Admin")
+def register_user():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        full_name = request.form["full_name"]
+        email = request.form["email"]
+        role = request.form["role"]
+        level = request.form["level"]
+
+        # Never save the real password - scramble it first
+        hashed_password = generate_password_hash(password)
+
+        # Check if this username is already taken, so we don't crash
+        # the database with a duplicate entry
+        cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+        existing_user = cursor.fetchone()
+
+        if existing_user:
+            return render_template("register.html", message="Username already taken")
+
+        cursor.execute(
+            """INSERT INTO users (username, password, role, full_name, email, level)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (username, hashed_password, role, full_name, email, level)
+        )
+        connection.commit()
+
+        return redirect("/admin/users")
+
+    # If it's just a visit (GET), show the empty registration form
+    return render_template("register.html", message="")
+
+
+# Creates MANY accounts at once from an uploaded CSV file.
+# Expected columns: username, password, full_name, email, level, role, programme
+@app.route("/admin/bulk-register", methods=["GET", "POST"])
+@login_required("Admin")
+def bulk_register():
+    if request.method == "POST":
+        uploaded_file = request.files["csv_file"]
+
+        # Read the uploaded file as text
+        file_contents = uploaded_file.read().decode("utf-8")
+        csv_reader = csv.DictReader(io.StringIO(file_contents))
+
+        added = 0
+        skipped = 0
+
+        for row in csv_reader:
+            username = row["username"]
+            password = row["password"]
+            full_name = row["full_name"]
+            email = row.get("email", "")
+            level = row.get("level", "")
+            role = row.get("role", "Student")
+            programme = row.get("programme", "")
+
+            if programme == "":
+                programme = None
+
+            # Skip if this username already exists
+            cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+            existing = cursor.fetchone()
+
+            if existing:
+                skipped += 1
+                continue
+
+            hashed_password = generate_password_hash(password)
+
+            cursor.execute(
+                """INSERT INTO users (username, password, role, full_name, email, level, programme)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                (username, hashed_password, role, full_name, email, level, programme)
+            )
+            added += 1
+
+        connection.commit()
+
+        return render_template(
+            "bulk_register.html",
+            message=f"Added {added} users, skipped {skipped} duplicates."
+        )
+
+    return render_template("bulk_register.html", message="")
+
+
+# Shows every user in the system, with Edit/Delete links for each
+@app.route("/admin/users")
+@login_required("Admin")
+def manage_users():
+    cursor.execute("SELECT id, username, full_name, role, email FROM users")
+    all_users = cursor.fetchall()
+
+    return render_template("users.html", all_users=all_users)
+
+
+# Deletes one specific user, chosen by their ID number
+@app.route("/admin/delete/<int:user_id>")
+@login_required("Admin")
+def delete_user(user_id):
+    cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    connection.commit()
+
+    return redirect("/admin/users")
+
+
+# Shows a pre-filled edit form (GET), or saves the changes (POST)
+@app.route("/admin/edit/<int:user_id>", methods=["GET", "POST"])
+@login_required("Admin")
+def edit_user(user_id):
+
+    if request.method == "POST":
+        username = request.form["username"]
+        full_name = request.form["full_name"]
+        role = request.form["role"]
+        email = request.form["email"]
+        level = request.form["level"]
+
+        cursor.execute(
+            """UPDATE users SET username = ?, full_name = ?, email = ?,
+                                role = ?, level = ? WHERE id = ?""",
+            (username, full_name, email, role, level, user_id)
+        )
+        connection.commit()
+
+        return redirect("/admin/users")
+
+    # GET request - fetch the current details for this user, to show in the form
+    cursor.execute(
+        "SELECT id, username, full_name, role, email, level FROM users WHERE id = ?",
+        (user_id,)
+    )
+    user = cursor.fetchone()
+
+    return render_template("edit.html", user=user)
+
 
 # ============================================================
 # ADMIN - TIMETABLE MANAGEMENT
@@ -437,195 +618,9 @@ def edit_class(class_id):
 
     return render_template("edit_class.html", class_data=class_data)
 
-# ============================================================
-# ADMIN - DASHBOARD
-# ============================================================
-
-# Admin's landing page - shows quick numbers and shortcuts
-@app.route("/admin")
-@login_required("Admin")
-def admin_dashboard():
-    username = session["username"]
-
-    # Count how many users, timetable entries, and comments exist,
-    # just to display as quick stats on the dashboard
-    cursor.execute("SELECT COUNT(*) FROM users")
-    total_users = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM timetable")
-    total_classes = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM comments")
-    total_comments = cursor.fetchone()[0]
-
-    return render_template(
-        "admin.html",
-        username=username,
-        total_users=total_users,
-        total_classes=total_classes,
-        total_comments=total_comments
-    )
-
-
-import csv
-import io
-
-@app.route("/admin/bulk-register", methods=["GET", "POST"])
-@login_required("Admin")
-def bulk_register():
-    if request.method == "POST":
-        uploaded_file = request.files["csv_file"]
-
-        # Read the uploaded file as text
-        file_contents = uploaded_file.read().decode("utf-8")
-        csv_reader = csv.DictReader(io.StringIO(file_contents))
-
-        added = 0
-        skipped = 0
-
-        for row in csv_reader:
-            username = row["username"]
-            password = row["password"]
-            full_name = row["full_name"]
-            email = row.get("email", "")
-            level = row.get("level", "")
-            role = row.get("role", "Student")
-            programme = row.get("programme", "")
-
-            if programme == "":
-                programme = None
-
-            # Skip if this username already exists
-            cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
-            existing = cursor.fetchone()
-
-            if existing:
-                skipped += 1
-                continue
-
-            hashed_password = generate_password_hash(password)
-
-            cursor.execute(
-                """INSERT INTO users (username, password, role, full_name, email, level, programme)
-                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                (username, hashed_password, role, full_name, email, level, programme)
-            )
-            added += 1
-
-        connection.commit()
-
-        return render_template("bulk_register.html", message=f"Added {added} users, skipped {skipped} duplicates.")
-
-    return render_template("bulk_register.html", message="")
-
 
 # ============================================================
-# ADMIN - USER MANAGEMENT
-# ============================================================
-
-# Creates a new Student, Lecturer, or Admin account
-@app.route("/admin/register", methods=["GET", "POST"])
-@login_required("Admin")
-def register_user():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        full_name = request.form["full_name"]
-        email = request.form["email"]
-        role = request.form["role"]
-        level = request.form["level"]
-
-        # Never save the real password - scramble it first
-        hashed_password = generate_password_hash(password)
-
-        # Check if this username is already taken, so we don't crash
-        # the database with a duplicate entry
-        cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
-        existing_user = cursor.fetchone()
-
-        if existing_user:
-            return render_template("register.html", message="Username already taken")
-
-        cursor.execute(
-            """INSERT INTO users (username, password, role, full_name, email, level)
-               VALUES (?, ?, ?, ?, ?, ?)""",
-            (username, hashed_password, role, full_name, email, level)
-        )
-        connection.commit()
-
-        return redirect("/admin/users")
-
-    # If it's just a visit (GET), show the empty registration form
-    return render_template("register.html", message="")
-
-
-# Shows every user in the system, with Edit/Delete links for each
-@app.route("/admin/users")
-@login_required("Admin")
-def manage_users():
-    cursor.execute("SELECT id, username, full_name, role, email FROM users")
-    all_users = cursor.fetchall()
-
-    return render_template("users.html", all_users=all_users)
-
-
-# Deletes one specific user, chosen by their ID number
-@app.route("/admin/delete/<int:user_id>")
-@login_required("Admin")
-def delete_user(user_id):
-    cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
-    connection.commit()
-
-    return redirect("/admin/users")
-
-
-# Shows a pre-filled edit form (GET), or saves the changes (POST)
-@app.route("/admin/edit/<int:user_id>", methods=["GET", "POST"])
-@login_required("Admin")
-def edit_user(user_id):
-
-    if request.method == "POST":
-        username = request.form["username"]
-        full_name = request.form["full_name"]
-        role = request.form["role"]
-        email = request.form["email"]
-        level = request.form["level"]
-
-        cursor.execute(
-            """UPDATE users SET username = ?, full_name = ?, email = ?,
-                                role = ?, level = ? WHERE id = ?""",
-            (username, full_name, email, role, level, user_id)
-        )
-        connection.commit()
-
-        return redirect("/admin/users")
-
-    # GET request - fetch the current details for this user, to show in the form
-    cursor.execute(
-        "SELECT id, username, full_name, role, email, level FROM users WHERE id = ?",
-        (user_id,)
-    )
-    user = cursor.fetchone()
-
-    return render_template("edit.html", user=user)
-# ============================================================
-# ADMIN - COMMENTS
-# ============================================================
-
-# Shows every comment submitted by lecturers, newest first
-@app.route("/admin/comments")
-@login_required("Admin")
-def view_comments():
-    cursor.execute(
-        "SELECT lecturer_username, message, created_at FROM comments ORDER BY created_at DESC"
-    )
-    all_comments = cursor.fetchall()
-
-    return render_template("comments.html", all_comments=all_comments)
-
-
-# ============================================================
-# START THE APP
+# ADMIN - TIMETABLE AUTO-GENERATION
 # ============================================================
 
 def generate_timetable(level, programme=None):
@@ -634,7 +629,7 @@ def generate_timetable(level, programme=None):
     programme, if applicable) using the lecturers, venues, and course
     requirements already stored in the database.
 
-    Returns a list of newly created timetable rows, or raises an error
+    Returns a list of newly created timetable rows, or an error
     message (as a string) if something couldn't be scheduled.
     """
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
@@ -681,7 +676,7 @@ def generate_timetable(level, programme=None):
         if not possible_lecturers:
             return f"No lecturer found for {course_code} - please add one first."
 
-        # Schedule the required number of lecture sessions
+        # Schedule the required number of lecture and practical sessions
         sessions_to_book = [("Lecture", lecture_rooms)] * lectures_needed + [("Practical", labs)] * practicals_needed
 
         for session_type, valid_venues in sessions_to_book:
@@ -730,6 +725,9 @@ def generate_timetable(level, programme=None):
 
     return new_schedule
 
+
+# Uses generate_timetable() above to build a schedule and save it into the
+# real timetable table, replacing any existing entries for that level
 @app.route("/admin/timetable/generate", methods=["GET", "POST"])
 @login_required("Admin")
 def generate_timetable_route():
@@ -764,8 +762,25 @@ def generate_timetable_route():
     return render_template("generate_timetable.html", message="")
 
 
+# ============================================================
+# ADMIN - COMMENTS
+# ============================================================
+
+# Shows every comment submitted by lecturers, newest first
+@app.route("/admin/comments")
+@login_required("Admin")
+def view_comments():
+    cursor.execute(
+        "SELECT lecturer_username, message, created_at FROM comments ORDER BY created_at DESC"
+    )
+    all_comments = cursor.fetchall()
+
+    return render_template("comments.html", all_comments=all_comments)
 
 
+# ============================================================
+# START THE APP
+# ============================================================
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -15,7 +15,7 @@
  Column-----------Purpose
 	id----------------Unique ID for each user
 	username----------Used to log in
-	password----------User's password (later we'll store it securely)
+	password----------User's password 
 	role Admin,-------Lecturer, or Student
 	full_name---------User's full name
 	email-------------Email address
