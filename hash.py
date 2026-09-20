@@ -1,3 +1,14 @@
+"""
+ONE-TIME MIGRATION SCRIPT - DO NOT RUN AGAIN
+----------------------------------------------
+This script was used once to convert existing plain-text passwords
+into secure hashes, after password hashing was added to the app.
+
+Running this again would re-hash already-hashed passwords, breaking
+every user's login. It is kept here only as a reference for how the
+original migration was done.
+"""
+
 from database import connection, cursor
 from werkzeug.security import generate_password_hash
 

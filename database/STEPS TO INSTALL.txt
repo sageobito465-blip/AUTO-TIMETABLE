@@ -1,6 +1,6 @@
 step1:	git clone https://github.com/sageobito465-blip/AUTO-TIMETABLE
 step2: python -m venv venv
-pstep3: ip install -r requirements.txt
+pstep3: pip install -r requirements.txt
 step4:	CREATE DATABASE auto_timetable;
 	CREATE USER 'flask_user'@'localhost' IDENTIFIED BY 'flask123';
 	GRANT ALL PRIVILEGES ON auto_timetable.* TO 'flask_user'@'localhost';

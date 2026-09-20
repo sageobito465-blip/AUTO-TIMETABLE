@@ -18,6 +18,19 @@ from dotenv import load_dotenv
 
 load_dotenv()  # reads the .env file and loads its values into the environment
 
+# ============================================================
+# COURSE TITLES
+# ============================================================
+
+COURSE_TITLES = {
+    "COM221": "Basic Computer Networking",
+    "COM223": "Basic Hardware Maintenance",
+    "COM224": "Management Information System",
+    "COM225": "Web Technology",
+    "COM227": "Project",
+    "COM228": "Introduction to Cyber Security"
+}
+
 app = Flask(__name__)
 
 # This secret key is needed so Flask can safely remember who is logged in.
@@ -33,10 +46,8 @@ app.secret_key = os.getenv("SECRET_KEY")
 # letting them see a page. Admins are always let through, no matter
 # which role a page was built for.
 def login_required(role):
-
     def login_validation(f):
-
-        @wraps(f)  # keeps the real function name, so Flask doesn't get confused
+        @wraps(f)
         def guard(*args, **kwargs):
 
             # Not logged in at all -> send to login page
@@ -74,8 +85,10 @@ def login():
     if "username" in session:
         if session["role"] == "Admin":
             return redirect("/admin")
+
         elif session["role"] == "Lecturer":
             return redirect("/lecturer")
+
         elif session["role"] == "Student":
             return redirect("/student")
 
@@ -89,9 +102,11 @@ def login():
             "SELECT username, password, role FROM users WHERE username = ?",
             (username,)
         )
+
         user = cursor.fetchone()
 
         if user:
+
             # check_password_hash compares the typed password against the
             # scrambled (hashed) password stored in the database
             if check_password_hash(user[1], password):
@@ -103,19 +118,30 @@ def login():
                 # Send them to the correct dashboard for their role
                 if user[2] == "Admin":
                     return redirect("/admin")
+
                 elif user[2] == "Lecturer":
                     return redirect("/lecturer")
+
                 elif user[2] == "Student":
                     return redirect("/student")
 
             else:
-                return render_template("login.html", message="Wrong Password")
+                return render_template(
+                    "login.html",
+                    message="Wrong Password"
+                )
 
         else:
-            return render_template("login.html", message="User Not Found")
+            return render_template(
+                "login.html",
+                message="User Not Found"
+            )
 
     # If it's just a normal visit (GET), show the empty login form
-    return render_template("login.html", message="")
+    return render_template(
+        "login.html",
+        message=""
+    )
 
 
 # Logs the user out by clearing everything in their session
@@ -133,7 +159,15 @@ def logout():
 # day + time-slot grid, like a weekly timetable on a wall.
 # Used by both /student and /timetable/grid.
 def build_timetable_grid(all_classes):
-    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+
+    days = [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday"
+    ]
+
     time_slots = [
         ("08:00:00", "10:00:00"),
         ("10:00:00", "12:00:00"),
@@ -143,20 +177,90 @@ def build_timetable_grid(all_classes):
 
     # Start with every day/time slot empty
     grid = {}
+
     for day in days:
         for slot in time_slots:
             grid[(day, slot)] = None
 
     # Now fill in the slots that actually have a class scheduled
     for class_row in all_classes:
+
         course_code, session_type, day, start_time, end_time, venue, lecturer_name, lecturer_title = class_row
+
         # start_time/end_time come back from the database as timedelta objects,
         # so we turn them into plain text to match our time_slots list above
         start_str = str(start_time)
         end_str = str(end_time)
+
         grid[(day, (start_str, end_str))] = class_row
 
     return grid, days, time_slots
+
+
+# ============================================================
+# ACCOUNT (shared - any logged-in user, any role)
+# ============================================================
+
+# Lets any logged-in user change their own password, as long as
+# they correctly enter their current password first
+@app.route("/change-password", methods=["GET", "POST"])
+def change_password():
+
+    # Not logged in at all -> send to login page
+    if "username" not in session:
+        return redirect("/login")
+
+    if request.method == "POST":
+
+        current_password = request.form["current_password"]
+        new_password = request.form["new_password"]
+        confirm_password = request.form["confirm_password"]
+
+        username = session["username"]
+
+        # Look up this user's current stored password hash
+        cursor.execute(
+            "SELECT password FROM users WHERE username = ?",
+            (username,)
+        )
+
+        user = cursor.fetchone()
+
+        # Check the current password is correct before allowing any change.
+        # This stops someone from changing the password without knowing it.
+        if not check_password_hash(user[0], current_password):
+            return render_template(
+                "change_password.html",
+                message="Current password is incorrect"
+            )
+
+        # Make sure the two new password fields match, to catch typos
+        if new_password != confirm_password:
+            return render_template(
+                "change_password.html",
+                message="New passwords do not match"
+            )
+
+        # Scramble the new password before saving it - never store plain text
+        hashed_password = generate_password_hash(new_password)
+
+        cursor.execute(
+            "UPDATE users SET password = ? WHERE username = ?",
+            (hashed_password, username)
+        )
+
+        connection.commit()
+
+        return render_template(
+            "change_password.html",
+            message="Password changed successfully!"
+        )
+
+    # If it's just a normal visit (GET), show the empty form
+    return render_template(
+        "change_password.html",
+        message=""
+    )
 
 
 # ============================================================
@@ -168,20 +272,47 @@ def build_timetable_grid(all_classes):
 @app.route("/student")
 @login_required("Student")
 def student_dashboard():
+
     username = session["username"]
 
-    cursor.execute("SELECT level FROM users WHERE username = ?", (username,))
+    cursor.execute(
+        "SELECT level, programme FROM users WHERE username = ?",
+        (username,)
+    )
+
     student = cursor.fetchone()
+
     student_level = student[0]
+    student_programme = student[1]  # NCC, SWD, or None for ND1/ND2
 
     selected_level = request.args.get("level", student_level)
-
-    cursor.execute(
-        """SELECT course_code, session_type, day, start_time, end_time,
-                  venue, lecturer_name, lecturer_title
-           FROM timetable WHERE level = ?""",
-        (selected_level,)
+    selected_programme = request.args.get(
+        "programme",
+        student_programme
     )
+
+    if selected_programme:
+
+        # HND student - filter by both level AND programme
+        cursor.execute(
+            """SELECT course_code, session_type, day, start_time, end_time,
+                      venue, lecturer_name, lecturer_title
+               FROM timetable
+               WHERE level = ? AND programme = ?""",
+            (selected_level, selected_programme)
+        )
+
+    else:
+
+        # ND student - no programme split, filter by level only
+        cursor.execute(
+            """SELECT course_code, session_type, day, start_time, end_time,
+                      venue, lecturer_name, lecturer_title
+               FROM timetable
+               WHERE level = ?""",
+            (selected_level,)
+        )
+
     all_classes = cursor.fetchall()
 
     grid, days, time_slots = build_timetable_grid(all_classes)
@@ -192,7 +323,8 @@ def student_dashboard():
         grid=grid,
         days=days,
         time_slots=time_slots,
-        selected_level=selected_level
+        selected_level=selected_level,
+        selected_programme=selected_programme
     )
 
 
@@ -204,19 +336,27 @@ def student_dashboard():
 @app.route("/lecturer")
 @login_required("Lecturer")
 def lecturer_dashboard():
+
     username = session["username"]
 
     # Get this lecturer's real name, so we can match it against the timetable
-    cursor.execute("SELECT full_name FROM users WHERE username = ?", (username,))
+    cursor.execute(
+        "SELECT full_name FROM users WHERE username = ?",
+        (username,)
+    )
+
     lecturer = cursor.fetchone()
+
     lecturer_name = lecturer[0]
 
     cursor.execute(
         """SELECT course_code, session_type, level, day, start_time, end_time,
                   venue, lecturer_title
-           FROM timetable WHERE lecturer_name = ?""",
+           FROM timetable
+           WHERE lecturer_name = ?""",
         (lecturer_name,)
     )
+
     all_classes = cursor.fetchall()
 
     return render_template(
@@ -231,6 +371,7 @@ def lecturer_dashboard():
 @app.route("/lecturer/comment", methods=["POST"])
 @login_required("Lecturer")
 def post_comment():
+
     username = session["username"]
     message = request.form["message"]
 
@@ -238,6 +379,7 @@ def post_comment():
         "INSERT INTO comments (lecturer_username, message) VALUES (?, ?)",
         (username, message)
     )
+
     connection.commit()
 
     return redirect("/lecturer")
@@ -250,6 +392,7 @@ def post_comment():
 # Lets any logged-in user search the timetable by lecturer name
 @app.route("/search")
 def search_lecturer():
+
     if "username" not in session:
         return redirect("/login")
 
@@ -257,40 +400,93 @@ def search_lecturer():
 
     cursor.execute(
         """SELECT course_code, session_type, level, day, start_time, end_time,
-                  venue, lecturer_name, lecturer_title
-           FROM timetable WHERE lecturer_name LIKE ?""",
-        (f"%{query}%",)  # the % signs mean "match anywhere in the text"
-    )
-    results = cursor.fetchall()
-
-    return render_template("search.html", results=results, query=query)
-
-
-# Lets any logged-in user search the timetable by course code
-@app.route("/search/course")
-def search_course():
-    if "username" not in session:
-        return redirect("/login")
-
-    query = request.args.get("query", "")
-
-    cursor.execute(
-        """SELECT course_code, session_type, level, day, start_time, end_time,
-                  venue, lecturer_name, lecturer_title
-           FROM timetable WHERE course_code LIKE ?""",
+                  venue, lecturer_name
+           FROM timetable
+           WHERE lecturer_name LIKE ?""",
         (f"%{query}%",)
     )
-    results = cursor.fetchall()
 
-    return render_template("search_course.html", results=results, query=query)
+    results = []
+
+    for row in cursor.fetchall():
+
+        course_code = row[0]
+
+        # Find the course title using the course code
+        course_title = COURSE_TITLES.get(
+            course_code,
+            "Unknown Course"
+        )
+
+        # Add course title to the end of the row
+        results.append(row + (course_title,))
+
+    return render_template(
+        "search.html",
+        results=results,
+        query=query
+    )
+
+
+
+# Lets any logged-in user search the timetable by course code or course title
+
+@app.route("/search/course")
+def search_course():
+
+    if "username" not in session:
+        return redirect("/login")
+
+    query = request.args.get("query", "").lower()
+
+    matching_courses = []
+
+    # Search by course code OR course title
+    for course_code, course_title in COURSE_TITLES.items():
+
+        if (
+            query in course_code.lower()
+            or query in course_title.lower()
+        ):
+            matching_courses.append(course_code)
+
+    results = []
+
+    # Search timetable using the matching course codes
+    for course_code in matching_courses:
+
+        cursor.execute(
+            """SELECT course_code, session_type, level, day, start_time, end_time,
+                      venue, lecturer_name
+               FROM timetable
+               WHERE course_code = ?""",
+            (course_code,)
+        )
+
+        for row in cursor.fetchall():
+
+            course_title = COURSE_TITLES.get(
+                course_code,
+                "Unknown Course"
+            )
+
+            results.append(row + (course_title,))
+
+    return render_template(
+        "search_course.html",
+        results=results,
+        query=query
+    )
 
 
 # ============================================================
-# WEEKLY GRID VIEW (view any level's timetable, not just your own)
+# WEEKLY GRID VIEW
 # ============================================================
 
+# View any level's timetable, not just your own
 @app.route("/timetable/grid")
 def timetable_grid():
+
     if "username" not in session:
         return redirect("/login")
 
@@ -300,9 +496,11 @@ def timetable_grid():
     cursor.execute(
         """SELECT course_code, session_type, day, start_time, end_time,
                   venue, lecturer_name, lecturer_title
-           FROM timetable WHERE level = ?""",
+           FROM timetable
+           WHERE level = ?""",
         (level,)
     )
+
     all_classes = cursor.fetchall()
 
     grid, days, time_slots = build_timetable_grid(all_classes)
@@ -324,6 +522,7 @@ def timetable_grid():
 @app.route("/admin")
 @login_required("Admin")
 def admin_dashboard():
+
     username = session["username"]
 
     # Count how many users, timetable entries, and comments exist,
@@ -354,7 +553,9 @@ def admin_dashboard():
 @app.route("/admin/register", methods=["GET", "POST"])
 @login_required("Admin")
 def register_user():
+
     if request.method == "POST":
+
         username = request.form["username"]
         password = request.form["password"]
         full_name = request.form["full_name"]
@@ -362,46 +563,74 @@ def register_user():
         role = request.form["role"]
         level = request.form["level"]
 
+        # Reject registration if the password field was left empty or just spaces
+        if password.strip() == "":
+            return render_template("register.html", message="Password cannot be empty")
+
         # Never save the real password - scramble it first
         hashed_password = generate_password_hash(password)
 
         # Check if this username is already taken, so we don't crash
         # the database with a duplicate entry
-        cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+        cursor.execute(
+            "SELECT id FROM users WHERE username = ?",
+            (username,)
+        )
+
         existing_user = cursor.fetchone()
 
         if existing_user:
-            return render_template("register.html", message="Username already taken")
+            return render_template(
+                "register.html",
+                message="Username already taken"
+            )
 
         cursor.execute(
-            """INSERT INTO users (username, password, role, full_name, email, level)
+            """INSERT INTO users
+               (username, password, role, full_name, email, level)
                VALUES (?, ?, ?, ?, ?, ?)""",
-            (username, hashed_password, role, full_name, email, level)
+            (
+                username,
+                hashed_password,
+                role,
+                full_name,
+                email,
+                level
+            )
         )
+
         connection.commit()
 
         return redirect("/admin/users")
 
     # If it's just a visit (GET), show the empty registration form
-    return render_template("register.html", message="")
-
+    return render_template(
+        "register.html",
+        message=""
+    )
 
 # Creates MANY accounts at once from an uploaded CSV file.
 # Expected columns: username, password, full_name, email, level, role, programme
 @app.route("/admin/bulk-register", methods=["GET", "POST"])
 @login_required("Admin")
 def bulk_register():
+
     if request.method == "POST":
+
         uploaded_file = request.files["csv_file"]
 
         # Read the uploaded file as text
         file_contents = uploaded_file.read().decode("utf-8")
-        csv_reader = csv.DictReader(io.StringIO(file_contents))
+
+        csv_reader = csv.DictReader(
+            io.StringIO(file_contents)
+        )
 
         added = 0
         skipped = 0
 
         for row in csv_reader:
+
             username = row["username"]
             password = row["password"]
             full_name = row["full_name"]
@@ -413,8 +642,18 @@ def bulk_register():
             if programme == "":
                 programme = None
 
+            # Skip this row if the username OR password is empty,
+            # rather than creating a broken account
+            if username.strip() == "" or password.strip() == "":
+                skipped += 1
+                continue
+
             # Skip if this username already exists
-            cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+            cursor.execute(
+                "SELECT id FROM users WHERE username = ?",
+                (username,)
+            )
+
             existing = cursor.fetchone()
 
             if existing:
@@ -424,37 +663,62 @@ def bulk_register():
             hashed_password = generate_password_hash(password)
 
             cursor.execute(
-                """INSERT INTO users (username, password, role, full_name, email, level, programme)
+                """INSERT INTO users
+                   (username, password, role, full_name, email, level, programme)
                    VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                (username, hashed_password, role, full_name, email, level, programme)
+                (
+                    username,
+                    hashed_password,
+                    role,
+                    full_name,
+                    email,
+                    level,
+                    programme
+                )
             )
+
             added += 1
 
         connection.commit()
 
         return render_template(
             "bulk_register.html",
-            message=f"Added {added} users, skipped {skipped} duplicates."
+            message=f"Added {added} users, skipped {skipped} duplicates or invalid rows."
         )
 
-    return render_template("bulk_register.html", message="")
+    return render_template(
+        "bulk_register.html",
+        message=""
+    )
 
 
 # Shows every user in the system, with Edit/Delete links for each
 @app.route("/admin/users")
 @login_required("Admin")
 def manage_users():
-    cursor.execute("SELECT id, username, full_name, role, email FROM users")
+
+    cursor.execute(
+        "SELECT id, username, full_name, role, email FROM users"
+    )
+
     all_users = cursor.fetchall()
 
-    return render_template("users.html", all_users=all_users)
+    return render_template(
+        "users.html",
+        all_users=all_users
+    )
 
 
 # Deletes one specific user, chosen by their ID number
 @app.route("/admin/delete/<int:user_id>")
 @login_required("Admin")
 def delete_user(user_id):
-    cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+
+    cursor.execute(
+        "DELETE FROM users WHERE id = ?",
+        (user_id,)
+    )
+
     connection.commit()
 
     return redirect("/admin/users")
@@ -466,6 +730,7 @@ def delete_user(user_id):
 def edit_user(user_id):
 
     if request.method == "POST":
+
         username = request.form["username"]
         full_name = request.form["full_name"]
         role = request.form["role"]
@@ -473,22 +738,39 @@ def edit_user(user_id):
         level = request.form["level"]
 
         cursor.execute(
-            """UPDATE users SET username = ?, full_name = ?, email = ?,
-                                role = ?, level = ? WHERE id = ?""",
-            (username, full_name, email, role, level, user_id)
+            """UPDATE users
+               SET username = ?, full_name = ?, email = ?,
+                   role = ?, level = ?
+               WHERE id = ?""",
+            (
+                username,
+                full_name,
+                email,
+                role,
+                level,
+                user_id
+            )
         )
+
         connection.commit()
 
         return redirect("/admin/users")
 
-    # GET request - fetch the current details for this user, to show in the form
+    # GET request - fetch the current details for this user,
+    # to show in the form
     cursor.execute(
-        "SELECT id, username, full_name, role, email, level FROM users WHERE id = ?",
+        """SELECT id, username, full_name, role, email, level
+           FROM users
+           WHERE id = ?""",
         (user_id,)
     )
+
     user = cursor.fetchone()
 
-    return render_template("edit.html", user=user)
+    return render_template(
+        "edit.html",
+        user=user
+    )
 
 
 # ============================================================
@@ -499,24 +781,32 @@ def edit_user(user_id):
 @app.route("/admin/timetable")
 @login_required("Admin")
 def manage_timetable():
+
     cursor.execute(
         """SELECT id, course_code, session_type, programme, level, day,
                   start_time, end_time, venue, lecturer_name, lecturer_title
-           FROM timetable ORDER BY level, day"""
+           FROM timetable
+           ORDER BY level, day"""
     )
+
     all_classes = cursor.fetchall()
 
-    return render_template("timetable.html", all_classes=all_classes)
+    return render_template(
+        "timetable.html",
+        all_classes=all_classes
+    )
 
 
 # Adds a brand new class/session to the timetable
 @app.route("/admin/timetable/add", methods=["GET", "POST"])
 @login_required("Admin")
 def add_class():
+
     if request.method == "POST":
+
         course_code = request.form["course_code"]
         session_type = request.form["session_type"]
-        programme = request.form["programme"]  # blank for ND1/ND2, since they have no programme split
+        programme = request.form["programme"]
         level = request.form["level"]
         day = request.form["day"]
         start_time = request.form["start_time"]
@@ -525,18 +815,31 @@ def add_class():
         lecturer_name = request.form["lecturer_name"]
         lecturer_title = request.form["lecturer_title"]
 
-        # Store nothing (NULL) instead of an empty string when there's no programme
+        # Store nothing (NULL) instead of an empty string
+        # when there's no programme
         if programme == "":
             programme = None
 
         cursor.execute(
-            """INSERT INTO timetable (course_code, session_type, programme, level,
-                                       day, start_time, end_time, venue,
-                                       lecturer_name, lecturer_title)
+            """INSERT INTO timetable
+               (course_code, session_type, programme, level,
+                day, start_time, end_time, venue,
+                lecturer_name, lecturer_title)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (course_code, session_type, programme, level, day,
-             start_time, end_time, venue, lecturer_name, lecturer_title)
+            (
+                course_code,
+                session_type,
+                programme,
+                level,
+                day,
+                start_time,
+                end_time,
+                venue,
+                lecturer_name,
+                lecturer_title
+            )
         )
+
         connection.commit()
 
         return redirect("/admin/timetable")
@@ -548,7 +851,12 @@ def add_class():
 @app.route("/admin/timetable/delete/<int:class_id>")
 @login_required("Admin")
 def delete_class(class_id):
-    cursor.execute("DELETE FROM timetable WHERE id = ?", (class_id,))
+
+    cursor.execute(
+        "DELETE FROM timetable WHERE id = ?",
+        (class_id,)
+    )
+
     connection.commit()
 
     return redirect("/admin/timetable")
@@ -560,6 +868,7 @@ def delete_class(class_id):
 def edit_class(class_id):
 
     if request.method == "POST":
+
         course_code = request.form["course_code"]
         session_type = request.form["session_type"]
         programme = request.form["programme"]
@@ -575,24 +884,40 @@ def edit_class(class_id):
             programme = None
 
         cursor.execute(
-            """UPDATE timetable SET course_code = ?, session_type = ?, programme = ?,
-                                    level = ?, day = ?, start_time = ?, end_time = ?,
-                                    venue = ?, lecturer_name = ?, lecturer_title = ?
+            """UPDATE timetable
+               SET course_code = ?, session_type = ?, programme = ?,
+                   level = ?, day = ?, start_time = ?, end_time = ?,
+                   venue = ?, lecturer_name = ?, lecturer_title = ?
                WHERE id = ?""",
-            (course_code, session_type, programme, level, day,
-             start_time, end_time, venue, lecturer_name, lecturer_title, class_id)
+            (
+                course_code,
+                session_type,
+                programme,
+                level,
+                day,
+                start_time,
+                end_time,
+                venue,
+                lecturer_name,
+                lecturer_title,
+                class_id
+            )
         )
+
         connection.commit()
 
         return redirect("/admin/timetable")
 
-    # GET request - fetch this class's current details, to show in the form
+    # GET request - fetch this class's current details,
+    # to show in the form
     cursor.execute(
         """SELECT id, course_code, session_type, programme, level, day,
                   start_time, end_time, venue, lecturer_name, lecturer_title
-           FROM timetable WHERE id = ?""",
+           FROM timetable
+           WHERE id = ?""",
         (class_id,)
     )
+
     class_data = cursor.fetchone()
 
     # Tuples can't be changed directly, so turn this into a list first
@@ -601,14 +926,18 @@ def edit_class(class_id):
     # start_time (position 6) comes back as a timedelta - turn it into
     # plain "HH:MM" text so it matches the dropdown options in the form
     total_seconds_start = class_data[6].total_seconds()
+
     hours_start = int(total_seconds_start // 3600)
     minutes_start = int((total_seconds_start % 3600) // 60)
+
     class_data[6] = f"{hours_start:02d}:{minutes_start:02d}"
 
     # Same conversion for end_time (position 7)
     total_seconds_end = class_data[7].total_seconds()
+
     hours_end = int(total_seconds_end // 3600)
     minutes_end = int((total_seconds_end % 3600) // 60)
+
     class_data[7] = f"{hours_end:02d}:{minutes_end:02d}"
 
     # programme might be empty (None) in the database - change it to an
@@ -616,7 +945,10 @@ def edit_class(class_id):
     if class_data[3] is None:
         class_data[3] = ""
 
-    return render_template("edit_class.html", class_data=class_data)
+    return render_template(
+        "edit_class.html",
+        class_data=class_data
+    )
 
 
 # ============================================================
@@ -624,6 +956,7 @@ def edit_class(class_id):
 # ============================================================
 
 def generate_timetable(level, programme=None):
+
     """
     Attempts to build a conflict-free timetable for one level (and
     programme, if applicable) using the lecturers, venues, and course
@@ -632,7 +965,15 @@ def generate_timetable(level, programme=None):
     Returns a list of newly created timetable rows, or an error
     message (as a string) if something couldn't be scheduled.
     """
-    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+
+    days = [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday"
+    ]
+
     time_slots = [
         ("08:00:00", "10:00:00"),
         ("10:00:00", "12:00:00"),
@@ -642,23 +983,38 @@ def generate_timetable(level, programme=None):
 
     # Get every course that needs to be scheduled for this level
     cursor.execute(
-        "SELECT course_code, lectures_per_week, practicals_per_week FROM course_requirements WHERE level = ?",
+        """SELECT course_code, lectures_per_week, practicals_per_week
+           FROM course_requirements
+           WHERE level = ?""",
         (level,)
     )
+
     courses = cursor.fetchall()
 
     # Get all venues, split by type
-    cursor.execute("SELECT name, venue_type FROM venues")
+    cursor.execute(
+        "SELECT name, venue_type FROM venues"
+    )
+
     all_venues = cursor.fetchall()
-    lecture_rooms = [v[0] for v in all_venues if v[1] == "Lecture Room"]
-    labs = [v[0] for v in all_venues if v[1] == "Lab"]
 
-    # These sets keep track of what's already been booked, so we don't double-book
-    booked_lecturer_slots = set()   # (lecturer_name, day, start_time)
-    booked_venue_slots = set()      # (venue, day, start_time)
-    booked_level_slots = set()      # (day, start_time) - the level can't be in two places at once
+    lecture_rooms = [
+        v[0] for v in all_venues
+        if v[1] == "Lecture Room"
+    ]
 
-    new_schedule = []   # the rows we successfully schedule
+    labs = [
+        v[0] for v in all_venues
+        if v[1] == "Lab"
+    ]
+
+    # These sets keep track of what's already been booked,
+    # so we don't double-book
+    booked_lecturer_slots = set()
+    booked_venue_slots = set()
+    booked_level_slots = set()
+
+    new_schedule = []
 
     # Try to schedule every course, one at a time
     for course_code, lectures_needed, practicals_needed in courses:
@@ -667,26 +1023,35 @@ def generate_timetable(level, programme=None):
         cursor.execute(
             """SELECT lecturers.full_name, lecturers.title
                FROM lecturer_courses
-               JOIN lecturers ON lecturer_courses.lecturer_id = lecturers.id
+               JOIN lecturers
+               ON lecturer_courses.lecturer_id = lecturers.id
                WHERE lecturer_courses.course_code = ?""",
             (course_code,)
         )
+
         possible_lecturers = cursor.fetchall()
 
         if not possible_lecturers:
             return f"No lecturer found for {course_code} - please add one first."
 
         # Schedule the required number of lecture and practical sessions
-        sessions_to_book = [("Lecture", lecture_rooms)] * lectures_needed + [("Practical", labs)] * practicals_needed
+        sessions_to_book = (
+            [("Lecture", lecture_rooms)] * lectures_needed
+            + [("Practical", labs)] * practicals_needed
+        )
 
         for session_type, valid_venues in sessions_to_book:
+
             scheduled = False
 
             # Try every day and time slot until we find one that works
             for day in days:
+
                 if scheduled:
                     break
+
                 for start_time, end_time in time_slots:
+
                     if scheduled:
                         break
 
@@ -696,32 +1061,65 @@ def generate_timetable(level, programme=None):
 
                     # Try each lecturer who can teach this course
                     for lecturer_name, lecturer_title in possible_lecturers:
-                        if (lecturer_name, day, start_time) in booked_lecturer_slots:
+
+                        if (
+                            lecturer_name,
+                            day,
+                            start_time
+                        ) in booked_lecturer_slots:
                             continue
 
-                        # Try each venue of the right type (Lecture Room or Lab)
+                        # Try each venue of the right type
+                        # (Lecture Room or Lab)
                         for venue in valid_venues:
-                            if (venue, day, start_time) in booked_venue_slots:
+
+                            if (
+                                venue,
+                                day,
+                                start_time
+                            ) in booked_venue_slots:
                                 continue
 
                             # Found a valid combination - book it
-                            booked_lecturer_slots.add((lecturer_name, day, start_time))
-                            booked_venue_slots.add((venue, day, start_time))
-                            booked_level_slots.add((day, start_time))
+                            booked_lecturer_slots.add(
+                                (lecturer_name, day, start_time)
+                            )
 
-                            new_schedule.append((
-                                course_code, session_type, programme, level,
-                                day, start_time, end_time, venue,
-                                lecturer_name, lecturer_title
-                            ))
+                            booked_venue_slots.add(
+                                (venue, day, start_time)
+                            )
+
+                            booked_level_slots.add(
+                                (day, start_time)
+                            )
+
+                            new_schedule.append(
+                                (
+                                    course_code,
+                                    session_type,
+                                    programme,
+                                    level,
+                                    day,
+                                    start_time,
+                                    end_time,
+                                    venue,
+                                    lecturer_name,
+                                    lecturer_title
+                                )
+                            )
 
                             scheduled = True
                             break
+
                         if scheduled:
                             break
 
             if not scheduled:
-                return f"Could not find a free slot for {course_code} ({session_type}) - try adding more venues or lecturers."
+                return (
+                    f"Could not find a free slot for "
+                    f"{course_code} ({session_type}) - "
+                    f"try adding more venues or lecturers."
+                )
 
     return new_schedule
 
@@ -731,35 +1129,55 @@ def generate_timetable(level, programme=None):
 @app.route("/admin/timetable/generate", methods=["GET", "POST"])
 @login_required("Admin")
 def generate_timetable_route():
+
     if request.method == "POST":
+
         level = request.form["level"]
         programme = request.form["programme"]
+
         if programme == "":
             programme = None
 
-        result = generate_timetable(level, programme)
+        result = generate_timetable(
+            level,
+            programme
+        )
 
-        # If generate_timetable() returned a string, that's an error message, not a schedule
+        # If generate_timetable() returned a string,
+        # that's an error message, not a schedule
         if isinstance(result, str):
-            return render_template("generate_timetable.html", message=result)
+            return render_template(
+                "generate_timetable.html",
+                message=result
+            )
 
-        # Remove any existing timetable entries for this level, so we don't get duplicates
-        cursor.execute("DELETE FROM timetable WHERE level = ?", (level,))
+        # Remove any existing timetable entries for this level,
+        # so we don't get duplicates
+        cursor.execute(
+            "DELETE FROM timetable WHERE level = ?",
+            (level,)
+        )
 
         # Insert every newly generated row
         for row in result:
+
             cursor.execute(
-                """INSERT INTO timetable (course_code, session_type, programme, level,
-                                           day, start_time, end_time, venue,
-                                           lecturer_name, lecturer_title)
+                """INSERT INTO timetable
+                   (course_code, session_type, programme, level,
+                    day, start_time, end_time, venue,
+                    lecturer_name, lecturer_title)
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 row
             )
+
         connection.commit()
 
         return redirect("/admin/timetable")
 
-    return render_template("generate_timetable.html", message="")
+    return render_template(
+        "generate_timetable.html",
+        message=""
+    )
 
 
 # ============================================================
@@ -770,12 +1188,19 @@ def generate_timetable_route():
 @app.route("/admin/comments")
 @login_required("Admin")
 def view_comments():
+
     cursor.execute(
-        "SELECT lecturer_username, message, created_at FROM comments ORDER BY created_at DESC"
+        """SELECT lecturer_username, message, created_at
+           FROM comments
+           ORDER BY created_at DESC"""
     )
+
     all_comments = cursor.fetchall()
 
-    return render_template("comments.html", all_comments=all_comments)
+    return render_template(
+        "comments.html",
+        all_comments=all_comments
+    )
 
 
 # ============================================================
