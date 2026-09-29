@@ -2,47 +2,147 @@
 <html>
 <head>
     <title>{% block title %}AUTO-TIMETABLE{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-    <nav>
+    <nav class="navbar">
 
-    {% if session["role"] == "Admin" %}
-        <a href="/admin" class="{% if request.path == '/admin' %}active{% endif %}">Dashboard</a>
-        <a href="/admin/users" class="{% if request.path == '/admin/users' %}active{% endif %}">Manage Users</a>
-        <a href="/admin/register" class="{% if request.path == '/admin/register' %}active{% endif %}">Register New User</a>
-        <a href="/admin/bulk-register" class="{% if request.path == '/admin/bulk-register' %}active{% endif %}">Bulk Register</a>
-        <a href="/admin/timetable" class="{% if request.path == '/admin/timetable' %}active{% endif %}">Manage Timetable</a>
-        <a href="/admin/timetable/generate" class="{% if request.path == '/admin/timetable/generate' %}active{% endif %}">Generate Timetable</a>
-        <a href="/admin/comments" class="{% if request.path == '/admin/comments' %}active{% endif %}">Lecturer Comments</a>
-        <a href="/search" class="{% if request.path == '/search' %}active{% endif %}">Search Lecturer</a>
-        <a href="/search/course" class="{% if request.path == '/search/course' %}active{% endif %}">Search Course</a>
-        <a href="/change-password" class="{% if request.path == '/change-password' %}active{% endif %}">Change Password</a>
-        <a href="/logout">Logout</a>
+        <div class="navbar-brand">
+            AUTO-TIMETABLE
+        </div>
 
-    {% elif session["role"] == "Student" %}
-        <a href="/student" class="{% if request.path == '/student' %}active{% endif %}">Dashboard</a>
-        <a href="/search" class="{% if request.path == '/search' %}active{% endif %}">Search Lecturer</a>
-        <a href="/search/course" class="{% if request.path == '/search/course' %}active{% endif %}">Search Course</a>
-        <a href="/change-password" class="{% if request.path == '/change-password' %}active{% endif %}">Change Password</a>
-        <a href="/logout">Logout</a>
+        <button class="menu-toggle" onclick="toggleMenu()">
+            ☰
+        </button>
 
-    {% elif session["role"] == "Lecturer" %}
-        <a href="/lecturer" class="{% if request.path == '/lecturer' %}active{% endif %}">Dashboard</a>
-        <a href="/search" class="{% if request.path == '/search' %}active{% endif %}">Search Lecturer</a>
-        <a href="/search/course" class="{% if request.path == '/search/course' %}active{% endif %}">Search Course</a>
-        <a href="/change-password" class="{% if request.path == '/change-password' %}active{% endif %}">Change Password</a>
-        <a href="/logout">Logout</a>
+        <div class="nav-links" id="navLinks">
 
-    {% endif %}
+        {% if session["role"] == "Admin" %}
+
+            <a href="/admin"
+            class="{% if request.path == '/admin' %}active{% endif %}">
+                Dashboard
+            </a>
+
+            <div class="nav-dropdown">
+                <button class="nav-dropdown-button" onclick="toggleDropdown(this)">
+                    Users ▾
+                </button>
+
+                <div class="nav-dropdown-content">
+                    <a href="/admin/users"
+                    class="{% if request.path == '/admin/users' %}active{% endif %}">
+                        Manage Users
+                    </a>
+
+                    <a href="/admin/register"
+                    class="{% if request.path == '/admin/register' %}active{% endif %}">
+                        Register New User
+                    </a>
+
+                    <a href="/admin/bulk-register"
+                    class="{% if request.path == '/admin/bulk-register' %}active{% endif %}">
+                        Bulk Register
+                    </a>
+                </div>
+            </div>
+
+            <div class="nav-dropdown">
+               <button class="nav-dropdown-button" onclick="toggleDropdown(this)">
+                    Timetable ▾
+                </button>
+                <div class="nav-dropdown-content">
+                    <a href="/admin/timetable"
+                    class="{% if request.path == '/admin/timetable' %}active{% endif %}">
+                        Manage Timetable
+                    </a>
+
+                    <a href="/admin/timetable/generate"
+                    class="{% if request.path == '/admin/timetable/generate' %}active{% endif %}">
+                        Generate Timetable
+                    </a>
+
+                    <a href="/admin/timetable/add"
+                    class="{% if request.path == '/admin/timetable/add' %}active{% endif %}">
+                        Add New Class
+                    </a>
+                </div>
+            </div>
+
+            <div class="nav-dropdown">
+                <button class="nav-dropdown-button" onclick="toggleDropdown(this)">
+                    Search ▾
+                </button>
+                <div class="nav-dropdown-content">
+                    <a href="/search"
+                    class="{% if request.path == '/search' %}active{% endif %}">
+                        Search Lecturer
+                    </a>
+
+                    <a href="/search/course"
+                    class="{% if request.path == '/search/course' %}active{% endif %}">
+                        Search Course
+                    </a>
+                </div>
+            </div>
+
+            <a href="/admin/comments"
+            class="{% if request.path == '/admin/comments' %}active{% endif %}">
+                Comments
+            </a>
+
+            <div class="nav-dropdown">
+                <button class="nav-dropdown-button" onclick="toggleDropdown(this)">
+                    Account ▾
+                </button>
+
+                <div class="nav-dropdown-content">
+                    <a href="/change-password"
+                    class="{% if request.path == '/change-password' %}active{% endif %}">
+                        Change Password
+                    </a>
+
+                    <a href="/logout">
+                        Logout
+                    </a>
+                </div>
+            </div>
+
+        {% elif session["role"] == "Student" %}
+            <a href="/student" class="{% if request.path == '/student' %}active{% endif %}">Dashboard</a>
+            <a href="/search" class="{% if request.path == '/search' %}active{% endif %}">Search Lecturer</a>
+            <a href="/search/course" class="{% if request.path == '/search/course' %}active{% endif %}">Search Course</a>
+            <a href="/change-password" class="{% if request.path == '/change-password' %}active{% endif %}">Change Password</a>
+            <a href="/logout">Logout</a>
+
+        {% elif session["role"] == "Lecturer" %}
+            <a href="/lecturer" class="{% if request.path == '/lecturer' %}active{% endif %}">Dashboard</a>
+            <a href="/search" class="{% if request.path == '/search' %}active{% endif %}">Search Lecturer</a>
+            <a href="/search/course" class="{% if request.path == '/search/course' %}active{% endif %}">Search Course</a>
+            <a href="/change-password" class="{% if request.path == '/change-password' %}active{% endif %}">Change Password</a>
+            <a href="/logout">Logout</a>
+
+        {% endif %}
+
+        </div>
     </nav>
-
 
     <div class="container">
         {% block content %}
         {% endblock %}
     </div>
+
+    <script>
+    function toggleMenu() {
+        document.getElementById("navLinks").classList.toggle("show");
+    }
+
+    function toggleDropdown(button) {
+        button.parentElement.classList.toggle("open");
+    }
+</script>
 
 </body>
 </html>

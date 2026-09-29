@@ -57,23 +57,91 @@ button:hover {
     background-color: #1f6391;
 }
 
-/* static style for navigation bar*/
-nav {
+ /* static style for navigation bar*/
+.navbar {
     background-color: #2c3e50;
-    padding: 12px 20px;
+    padding: 10px 20px;
     display: flex;
-    gap: 20px;
     align-items: center;
+    gap: 25px;
 }
 
-nav a {
+.navbar-brand {
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.nav-links {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.nav-dropdown {
+    position: relative;
+}
+
+.nav-dropdown-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 14px;
+    padding: 0;
+    cursor: pointer;
+}
+
+.nav-dropdown-button:hover {
+    color: #bdd7ee;
+}
+
+.nav-dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 190px;
+    background-color: #2c3e50;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+
+.nav-dropdown:hover .nav-dropdown-content {
+    display: block;
+}
+
+.nav-dropdown-content a {
+    display: block;
+    padding: 10px 14px;
+    color: white;
+    white-space: nowrap;
+}
+
+.nav-dropdown-content a:hover {
+    background-color: #34495e;
+}
+
+
+.nav-links a {
     color: white;
     font-size: 14px;
 }
 
-nav a:hover {
+.nav-links a:hover {
     color: #bdd7ee;
     text-decoration: none;
+}
+
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    padding: 4px 8px;
+    cursor: pointer;
 }
 
 .container {
@@ -521,23 +589,55 @@ form button[type="submit"] {
    ============================================================ */
 @media (max-width: 600px) {
 
-    /* Let the nav bar wrap onto multiple lines instead of overflowing */
-    nav {
-        flex-wrap: wrap;
-        gap: 10px 14px;
-        padding: 12px 14px;
-    }
-
-    nav a {
-        font-size: 13px;
-    }
-
-    /* Let wide tables scroll sideways with a finger swipe,
-       instead of squeezing text unreadably small */
-    table {
-        display: block;
+    .table-wrapper {
+        width: 100%;
         overflow-x: auto;
-        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+    .table-wrapper table {
+        width: max-content;
+        min-width: 100%;
+    }
+
+    /* Mobile navigation */
+    .navbar {
+        padding: 10px 14px;
+        position: relative;
+    }
+
+    .navbar-brand {
+        font-size: 16px;
+    }
+
+    .menu-toggle {
+        display: block;
+    }
+
+    .nav-links {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: #2c3e50;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        z-index: 1000;
+    }
+
+    .nav-links.show {
+        display: flex;
+    }
+
+    .nav-links a {
+        padding: 12px 16px;
+        font-size: 14px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-links a.active {
+        color: #f1c40f;
     }
 
     /* Stack multi-column form groups into a single column on phones */
@@ -551,21 +651,17 @@ form button[type="submit"] {
     .shortcut-row {
         grid-template-columns: 1fr;
     }
-
     /* Stack the day-slots grid (timetable view) into a single column,
        so each time slot gets full width instead of being squeezed */
     .day-slots {
         grid-template-columns: 1fr;
     }
-
     .day-row {
         grid-template-columns: 1fr;
     }
-
     .day-label {
         border-radius: 0;
     }
-
     /* Give the container less side padding on small screens */
     .container {
         padding: 12px 14px;
