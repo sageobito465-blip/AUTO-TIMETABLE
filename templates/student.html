@@ -6,7 +6,7 @@
 
     <div class="form-card-header" style="border-radius: 8px;">
         <p class="title">Welcome, {{ username }}</p>
-        <p class="subtitle">Viewing timetable for {{ selected_level }}{% if selected_programme %} ({{ selected_programme }}){% endif %}</p>
+        <p class="subtitle">Viewing timetable for {{ selected_level }} — {{ selected_semester }}{% if selected_programme %} ({{ selected_programme }}){% endif %}</p>
     </div>
 
     <div class="form-card" style="margin-top: 16px;">
@@ -25,6 +25,12 @@
                     <option value="" {% if not selected_programme %}selected{% endif %}>N/A</option>
                     <option value="NCC" {% if selected_programme == "NCC" %}selected{% endif %}>NCC</option>
                     <option value="SWD" {% if selected_programme == "SWD" %}selected{% endif %}>SWD</option>
+                </select>
+
+                <label>Semester</label>
+                <select name="semester">
+                    <option value="Semester 1" {% if selected_semester == "Semester 1" %}selected{% endif %}>Semester 1</option>
+                    <option value="Semester 2" {% if selected_semester == "Semester 2" %}selected{% endif %}>Semester 2</option>
                 </select>
 
                 <button type="submit">View</button>

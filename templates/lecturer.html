@@ -37,21 +37,7 @@
         {% for class in all_classes %}
         <tr>
             <td>{{ class[0] }}</td>
-            <td>
-                {% if class[0] == "COM221" %}
-                    Basic Computer Networking
-                {% elif class[0] == "COM223" %}
-                    Basic Hardware Maintenance
-                {% elif class[0] == "COM224" %}
-                    Management Information System
-                {% elif class[0] == "COM225" %}
-                    Web Technology
-                {% elif class[0] == "COM227" %}
-                    Project
-                {% elif class[0] == "COM228" %}
-                    Introduction to Cyber Security
-                {% endif %}
-            </td>
+            <td>{{ course_titles.get(class[0], "Unknown Course") }}</td>
 
             <td>{{ class[1] }}</td>
 

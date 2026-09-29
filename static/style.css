@@ -514,3 +514,61 @@ form button[type="submit"] {
 .slot-empty {
     color: #ccc;
 }
+
+/* ============================================================
+   MOBILE RESPONSIVENESS
+   Only applies on screens 600px wide or narrower (phones)
+   ============================================================ */
+@media (max-width: 600px) {
+
+    /* Let the nav bar wrap onto multiple lines instead of overflowing */
+    nav {
+        flex-wrap: wrap;
+        gap: 10px 14px;
+        padding: 12px 14px;
+    }
+
+    nav a {
+        font-size: 13px;
+    }
+
+    /* Let wide tables scroll sideways with a finger swipe,
+       instead of squeezing text unreadably small */
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    /* Stack multi-column form groups into a single column on phones */
+    .field-group.two-col,
+    .field-group.four-col {
+        grid-template-columns: 1fr;
+    }
+
+    /* Stack the stat cards and shortcut cards on the Admin dashboard */
+    .stats-row,
+    .shortcut-row {
+        grid-template-columns: 1fr;
+    }
+
+    /* Stack the day-slots grid (timetable view) into a single column,
+       so each time slot gets full width instead of being squeezed */
+    .day-slots {
+        grid-template-columns: 1fr;
+    }
+
+    .day-row {
+        grid-template-columns: 1fr;
+    }
+
+    .day-label {
+        border-radius: 0;
+    }
+
+    /* Give the container less side padding on small screens */
+    .container {
+        padding: 12px 14px;
+        margin: 10px auto;
+    }
+}

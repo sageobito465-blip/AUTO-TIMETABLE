@@ -1,3 +1,4 @@
+```html
 {% extends "base.html" %}
 
 {% block title %}Add New Class{% endblock %}
@@ -29,6 +30,7 @@
                 </div>
 
                 <div class="field-group schedule four-col">
+
                     <div>
                         <label>Level</label>
                         <select name="level">
@@ -49,6 +51,14 @@
                     </div>
 
                     <div>
+                        <label>Semester</label>
+                        <select name="semester">
+                            <option value="Semester 1">Semester 1</option>
+                            <option value="Semester 2">Semester 2</option>
+                        </select>
+                    </div>
+
+                    <div>
                         <label>Day</label>
                         <select name="day">
                             <option value="Monday">Monday</option>
@@ -59,6 +69,10 @@
                         </select>
                     </div>
 
+                </div>
+
+                <div class="field-group schedule two-col">
+
                     <div>
                         <label>Start Time</label>
                         <select name="start_time">
@@ -68,9 +82,7 @@
                             <option value="14:00">14:00</option>
                         </select>
                     </div>
-                </div>
 
-                <div class="field-group schedule two-col">
                     <div>
                         <label>End Time</label>
                         <select name="end_time">
@@ -81,13 +93,19 @@
                         </select>
                     </div>
 
+                </div>
+
+                <div class="field-group schedule two-col">
+
                     <div>
                         <label>Venue</label>
                         <input type="text" name="venue" placeholder="e.g. LAB 11, COM RM 2">
                     </div>
+
                 </div>
 
                 <div class="field-group staff two-col">
+
                     <div>
                         <label>Lecturer Name</label>
                         <input type="text" name="lecturer_name" placeholder="e.g. Mr. Adebesin">
@@ -100,6 +118,7 @@
                             <option value="T">T (Technologist)</option>
                         </select>
                     </div>
+
                 </div>
 
                 <button type="submit">Add Class</button>
@@ -109,3 +128,4 @@
     </div>
 
 {% endblock %}
+```
