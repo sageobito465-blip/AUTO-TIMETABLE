@@ -668,3 +668,158 @@ form button[type="submit"] {
         margin: 10px auto;
     }
 }
+
+/* Timetable management table */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-wrapper table {
+    min-width: 1200px;
+}
+
+.table-wrapper th,
+.table-wrapper td {
+    white-space: nowrap;
+}
+
+.table-wrapper td:last-child {
+    min-width: 100px;
+}
+
+/* Manage Timetable layout */
+
+.timetable-section-title {
+    margin-top: 35px;
+    margin-bottom: 15px;
+}
+
+.timetable-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    width: 100%;
+}
+
+.semester-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e7eb;
+}
+
+.semester-card-header {
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 12px;
+    margin-bottom: 15px;
+}
+
+.semester-card-header h3 {
+    margin: 0;
+}
+
+.class-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.class-item:last-child {
+    border-bottom: none;
+}
+
+.class-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.class-info strong {
+    font-size: 17px;
+}
+
+.class-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 700px) {
+
+    .timetable-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .class-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .class-actions {
+        width: 100%;
+    }
+
+}
+
+/* Manage Timetable colors */
+
+.timetable-section-title {
+    background: #2c3e50;
+    color: white;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-top: 35px;
+    margin-bottom: 15px;
+}
+
+.semester-card:nth-child(1) {
+    background: #f4f8fc;
+    border-top: 4px solid #3498db;
+}
+
+.semester-card:nth-child(2) {
+    background: #fffaf0;
+    border-top: 4px solid #f1c40f;
+}
+
+.semester-card-header h3 {
+    color: #2c3e50;
+}
+
+.class-item {
+    background: rgba(255, 255, 255, 0.7);
+    padding: 14px 10px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+}
+
+.class-actions a {
+    padding: 5px 9px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.class-actions a:first-child {
+    background: #3498db;
+    color: white;
+}
+
+.class-actions a:last-child {
+    background: #e74c3c;
+    color: white;
+}
+
+.class-actions a:first-child:hover {
+    background: #2980b9;
+}
+
+.class-actions a:last-child:hover {
+    background: #c0392b;
+}

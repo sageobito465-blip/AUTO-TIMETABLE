@@ -4,67 +4,467 @@
 
 {% block content %}
 
+<div class="timetable-header">
 
-<h1>Manage Timetable</h1>
+    <div>
+        <h1>Manage Timetable</h1>
+        <p>Manage classes by level and semester.</p>
+    </div>
 
-<a href="/admin/timetable/add">Add New Class</a>
+    <a href="/admin/timetable/add" class="add-class-button">
+        Add New Class
+    </a>
 
-<table border="1">
-    <tr>
-        <th>Course Code</th>
-        <th>Type</th>
-        <th>Programme</th>
-        <th>Level</th>
-        <th>Semester</th>
-        <th>Day</th>
-        <th>Start Time</th>
-        <th>End Time</th>
-        <th>Venue</th>
-        <th>Lecturer</th>
-        <th>Title</th>
-        <th>Actions</th>
-    </tr>
+</div>
 
-    {% for class in all_classes %}
-    <tr>
-        <td>{{ class[1] }}</td>
-        <td>{{ class[2] }}</td>
-        <td>{{ class[3] }}</td>
 
-        <td>
-            {% if class[4] == "ND1" %}
-                <span class="badge badge-nd1">ND1</span>
-            {% elif class[4] == "ND2" %}
-                <span class="badge badge-nd2">ND2</span>
-            {% elif class[4] == "HND1" %}
-                <span class="badge badge-hnd1">HND1</span>
-            {% elif class[4] == "HND2" %}
-                <span class="badge badge-hnd2">HND2</span>
-            {% endif %}
-        </td>
+<!-- ND1 -->
 
-        <td>{{ class[5] }}</td>
-        <td>{{ class[6] }}</td>
-        <td>{{ class[7] }}</td>
-        <td>{{ class[8] }}</td>
-        <td>{{ class[9] }}</td>
-        <td>{{ class[10] or "Unassigned" }}</td>
-        <td>{{ class[11] or "-" }}</td>
+<h2 class="timetable-section-title">ND1</h2>
 
-        <td>
-            <a href="/admin/timetable/edit/{{ class[0] }}">Edit</a>
-            <a href="/admin/timetable/delete/{{ class[0] }}"
-               onclick="return confirm('Are you sure you want to delete this class?')">
-                Delete
-            </a>
-        </td>
-    </tr>
+<div class="timetable-grid">
+
+    {% for semester in ["Semester 1", "Semester 2"] %}
+
+    <div class="semester-card">
+
+        <div class="semester-card-header">
+            <h3>{{ semester }}</h3>
+        </div>
+
+        <div class="semester-card-body">
+
+            {% for class in all_classes
+                if class[4] == "ND1"
+                and class[5] == semester %}
+
+            <div class="class-item">
+
+                <div class="class-info">
+
+                    <strong>{{ class[1] }}</strong>
+
+                    <span class="session-type">
+                        {{ class[2] }}
+                    </span>
+
+                    <span>
+                        {{ class[6] }} ·
+                        {{ class[7] }} – {{ class[8] }}
+                    </span>
+
+                    <span>
+                        {{ class[9] }}
+                    </span>
+
+                    <span>
+                        {{ class[10] or "Unassigned" }}
+                    </span>
+
+                </div>
+
+                <div class="class-actions">
+
+                    <a href="/admin/timetable/edit/{{ class[0] }}"
+                       class="edit-button">
+                        Edit
+                    </a>
+
+                    <a href="/admin/timetable/delete/{{ class[0] }}"
+                       class="delete-button"
+                       onclick="return confirm('Are you sure you want to delete this class?')">
+                        Delete
+                    </a>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
     {% endfor %}
-</table>
+
+</div>
+
+
+<!-- ND2 -->
+
+<h2 class="timetable-section-title">ND2</h2>
+
+<div class="timetable-grid">
+
+    {% for semester in ["Semester 1", "Semester 2"] %}
+
+    <div class="semester-card">
+
+        <div class="semester-card-header">
+            <h3>{{ semester }}</h3>
+        </div>
+
+        <div class="semester-card-body">
+
+            {% for class in all_classes
+                if class[4] == "ND2"
+                and class[5] == semester %}
+
+            <div class="class-item">
+
+                <div class="class-info">
+
+                    <strong>{{ class[1] }}</strong>
+
+                    <span class="session-type">
+                        {{ class[2] }}
+                    </span>
+
+                    <span>
+                        {{ class[6] }} ·
+                        {{ class[7] }} – {{ class[8] }}
+                    </span>
+
+                    <span>
+                        {{ class[9] }}
+                    </span>
+
+                    <span>
+                        {{ class[10] or "Unassigned" }}
+                    </span>
+
+                </div>
+
+                <div class="class-actions">
+
+                    <a href="/admin/timetable/edit/{{ class[0] }}"
+                       class="edit-button">
+                        Edit
+                    </a>
+
+                    <a href="/admin/timetable/delete/{{ class[0] }}"
+                       class="delete-button"
+                       onclick="return confirm('Are you sure you want to delete this class?')">
+                        Delete
+                    </a>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+
+<!-- HND1 NCC -->
+
+<h2 class="timetable-section-title">HND1 — NCC</h2>
+
+<div class="timetable-grid">
+
+    {% for semester in ["Semester 1", "Semester 2"] %}
+
+    <div class="semester-card">
+
+        <div class="semester-card-header">
+            <h3>{{ semester }}</h3>
+        </div>
+
+        <div class="semester-card-body">
+
+            {% for class in all_classes
+                if class[4] == "HND1"
+                and class[3] == "NCC"
+                and class[5] == semester %}
+
+            <div class="class-item">
+
+                <div class="class-info">
+
+                    <strong>{{ class[1] }}</strong>
+
+                    <span class="session-type">
+                        {{ class[2] }}
+                    </span>
+
+                    <span>
+                        {{ class[6] }} ·
+                        {{ class[7] }} – {{ class[8] }}
+                    </span>
+
+                    <span>
+                        {{ class[9] }}
+                    </span>
+
+                    <span>
+                        {{ class[10] or "Unassigned" }}
+                    </span>
+
+                </div>
+
+                <div class="class-actions">
+
+                    <a href="/admin/timetable/edit/{{ class[0] }}"
+                       class="edit-button">
+                        Edit
+                    </a>
+
+                    <a href="/admin/timetable/delete/{{ class[0] }}"
+                       class="delete-button"
+                       onclick="return confirm('Are you sure you want to delete this class?')">
+                        Delete
+                    </a>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+
+<!-- HND1 SWD -->
+
+<h2 class="timetable-section-title">HND1 — SWD</h2>
+
+<div class="timetable-grid">
+
+    {% for semester in ["Semester 1", "Semester 2"] %}
+
+    <div class="semester-card">
+
+        <div class="semester-card-header">
+            <h3>{{ semester }}</h3>
+        </div>
+
+        <div class="semester-card-body">
+
+            {% for class in all_classes
+                if class[4] == "HND1"
+                and class[3] == "SWD"
+                and class[5] == semester %}
+
+            <div class="class-item">
+
+                <div class="class-info">
+
+                    <strong>{{ class[1] }}</strong>
+
+                    <span class="session-type">
+                        {{ class[2] }}
+                    </span>
+
+                    <span>
+                        {{ class[6] }} ·
+                        {{ class[7] }} – {{ class[8] }}
+                    </span>
+
+                    <span>
+                        {{ class[9] }}
+                    </span>
+
+                    <span>
+                        {{ class[10] or "Unassigned" }}
+                    </span>
+
+                </div>
+
+                <div class="class-actions">
+
+                    <a href="/admin/timetable/edit/{{ class[0] }}"
+                       class="edit-button">
+                        Edit
+                    </a>
+
+                    <a href="/admin/timetable/delete/{{ class[0] }}"
+                       class="delete-button"
+                       onclick="return confirm('Are you sure you want to delete this class?')">
+                        Delete
+                    </a>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+
+<!-- HND2 NCC -->
+
+<h2 class="timetable-section-title">HND2 — NCC</h2>
+
+<div class="timetable-grid">
+
+    {% for semester in ["Semester 1", "Semester 2"] %}
+
+    <div class="semester-card">
+
+        <div class="semester-card-header">
+            <h3>{{ semester }}</h3>
+        </div>
+
+        <div class="semester-card-body">
+
+            {% for class in all_classes
+                if class[4] == "HND2"
+                and class[3] == "NCC"
+                and class[5] == semester %}
+
+            <div class="class-item">
+
+                <div class="class-info">
+
+                    <strong>{{ class[1] }}</strong>
+
+                    <span class="session-type">
+                        {{ class[2] }}
+                    </span>
+
+                    <span>
+                        {{ class[6] }} ·
+                        {{ class[7] }} – {{ class[8] }}
+                    </span>
+
+                    <span>
+                        {{ class[9] }}
+                    </span>
+
+                    <span>
+                        {{ class[10] or "Unassigned" }}
+                    </span>
+
+                </div>
+
+                <div class="class-actions">
+
+                    <a href="/admin/timetable/edit/{{ class[0] }}"
+                       class="edit-button">
+                        Edit
+                    </a>
+
+                    <a href="/admin/timetable/delete/{{ class[0] }}"
+                       class="delete-button"
+                       onclick="return confirm('Are you sure you want to delete this class?')">
+                        Delete
+                    </a>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+
+<!-- HND2 SWD -->
+
+<h2 class="timetable-section-title">HND2 — SWD</h2>
+
+<div class="timetable-grid">
+
+    {% for semester in ["Semester 1", "Semester 2"] %}
+
+    <div class="semester-card">
+
+        <div class="semester-card-header">
+            <h3>{{ semester }}</h3>
+        </div>
+
+        <div class="semester-card-body">
+
+            {% for class in all_classes
+                if class[4] == "HND2"
+                and class[3] == "SWD"
+                and class[5] == semester %}
+
+            <div class="class-item">
+
+                <div class="class-info">
+
+                    <strong>{{ class[1] }}</strong>
+
+                    <span class="session-type">
+                        {{ class[2] }}
+                    </span>
+
+                    <span>
+                        {{ class[6] }} ·
+                        {{ class[7] }} – {{ class[8] }}
+                    </span>
+
+                    <span>
+                        {{ class[9] }}
+                    </span>
+
+                    <span>
+                        {{ class[10] or "Unassigned" }}
+                    </span>
+
+                </div>
+
+                <div class="class-actions">
+
+                    <a href="/admin/timetable/edit/{{ class[0] }}"
+                       class="edit-button">
+                        Edit
+                    </a>
+
+                    <a href="/admin/timetable/delete/{{ class[0] }}"
+                       class="delete-button"
+                       onclick="return confirm('Are you sure you want to delete this class?')">
+                        Delete
+                    </a>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
 
 <br>
 
-<a href="/admin">Back to Admin Dashboard</a>
+<a href="/admin" class="back-link">
+    Back to Admin Dashboard
+</a>
 
 
 {% endblock %}
