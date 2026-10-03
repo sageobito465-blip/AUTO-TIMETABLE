@@ -10,7 +10,7 @@
     <nav class="navbar">
 
         <div class="navbar-brand">
-            AUTO-TIMETABLE
+            {% if session["role"] == "Student" %}MAPOLY Timetable{% else %}AUTO-TIMETABLE{% endif %}
         </div>
 
         <button class="menu-toggle" onclick="toggleMenu()">

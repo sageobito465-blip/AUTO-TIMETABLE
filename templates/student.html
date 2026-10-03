@@ -4,52 +4,68 @@
 
 {% block content %}
 
-    <div class="form-card-header" style="border-radius: 8px;">
-        <p class="title">Welcome, {{ username }}</p>
-        <p class="subtitle">Viewing timetable for {{ selected_level }} — {{ selected_semester }}{% if selected_programme %} ({{ selected_programme }}){% endif %}</p>
-    </div>
+    <section class="student-welcome">
+        <p class="student-eyebrow">MAPOLY Timetable</p>
+        <h1>Welcome, {{ username }}</h1>
+        <p class="student-context">Your timetable</p>
+        <div class="student-summary">
+            <span><strong>Level</strong> {{ selected_level }}</span>
+            <span><strong>Semester</strong> {{ selected_semester }}</span>
+            {% if selected_programme %}<span><strong>Programme</strong> {{ selected_programme }}</span>{% endif %}
+        </div>
+    </section>
 
-    <div class="form-card" style="margin-top: 16px;">
-        <div class="form-card-body">
-            <form method="GET" action="/student">
-                <label>Switch Level</label>
-                <select name="level">
-                    <option value="ND1" {% if selected_level == "ND1" %}selected{% endif %}>ND1</option>
-                    <option value="ND2" {% if selected_level == "ND2" %}selected{% endif %}>ND2</option>
-                    <option value="HND1" {% if selected_level == "HND1" %}selected{% endif %}>HND1</option>
-                    <option value="HND2" {% if selected_level == "HND2" %}selected{% endif %}>HND2</option>
-                </select>
+    <div class="student-controls">
+        <div class="student-controls-heading">
+            <h2>Timetable filters</h2>
+            <p>Choose your level, programme and semester to view a timetable.</p>
+        </div>
+        <div class="student-controls-body">
+            <form method="GET" action="/student" class="student-filter-form">
+                <div class="student-filter-field">
+                    <label>Level</label>
+                    <select name="level">
+                        <option value="ND1" {% if selected_level == "ND1" %}selected{% endif %}>ND1</option>
+                        <option value="ND2" {% if selected_level == "ND2" %}selected{% endif %}>ND2</option>
+                        <option value="HND1" {% if selected_level == "HND1" %}selected{% endif %}>HND1</option>
+                        <option value="HND2" {% if selected_level == "HND2" %}selected{% endif %}>HND2</option>
+                    </select>
+                </div>
 
-                <label>Programme (HND only)</label>
-                <select name="programme">
-                    <option value="" {% if not selected_programme %}selected{% endif %}>N/A</option>
-                    <option value="NCC" {% if selected_programme == "NCC" %}selected{% endif %}>NCC</option>
-                    <option value="SWD" {% if selected_programme == "SWD" %}selected{% endif %}>SWD</option>
-                </select>
+                <div class="student-filter-field">
+                    <label>Programme (HND only)</label>
+                    <select name="programme">
+                        <option value="" {% if not selected_programme %}selected{% endif %}>N/A</option>
+                        <option value="NCC" {% if selected_programme == "NCC" %}selected{% endif %}>NCC</option>
+                        <option value="SWD" {% if selected_programme == "SWD" %}selected{% endif %}>SWD</option>
+                    </select>
+                </div>
 
-                <label>Semester</label>
-                <select name="semester">
-                    <option value="Semester 1" {% if selected_semester == "Semester 1" %}selected{% endif %}>Semester 1</option>
-                    <option value="Semester 2" {% if selected_semester == "Semester 2" %}selected{% endif %}>Semester 2</option>
-                </select>
+                <div class="student-filter-field">
+                    <label>Semester</label>
+                    <select name="semester">
+                        <option value="Semester 1" {% if selected_semester == "Semester 1" %}selected{% endif %}>Semester 1</option>
+                        <option value="Semester 2" {% if selected_semester == "Semester 2" %}selected{% endif %}>Semester 2</option>
+                    </select>
+                </div>
 
                 <button type="submit">View</button>
             </form>
         </div>
     </div>
 
-    <div class="timetable-grid">
+    <div class="student-timetable-grid">
         {% for day in days %}
-        <div class="day-row">
-            <div class="day-label">{{ day }}</div>
-            <div class="day-slots">
+        <div class="student-day-row">
+            <div class="student-day-label">{{ day }}</div>
+            <div class="student-day-slots">
                 {% for slot in time_slots %}
                 {% set class_row = grid[(day, slot)] %}
-                <div class="slot-cell">
+                <div class="student-slot-cell{% if class_row and class_row[1] == 'Practical' %} practical{% endif %}{% if not class_row %} is-empty{% endif %}">
                     <div class="slot-time">{{ slot[0][:5] }} - {{ slot[1][:5] }}</div>
                     {% if class_row %}
-                        <strong>{{ class_row[0] }}</strong>{% if class_row[1] == "Practical" %} (P){% endif %}<br>
-                        {% if class_row[5] %}<span class="slot-venue">{{ class_row[5] }}</span><br>{% endif %}
+                        <strong class="student-course-code">{{ class_row[0] }}</strong>{% if class_row[1] == "Practical" %}<span class="practical-badge">Practical (P)</span>{% endif %}
+                        {% if class_row[5] %}<span class="slot-venue">{{ class_row[5] }}</span>{% endif %}
                         {% if class_row[6] %}<span class="slot-lecturer">{{ class_row[6] }}</span>{% endif %}
                     {% else %}
                         <span class="slot-empty">-</span>
