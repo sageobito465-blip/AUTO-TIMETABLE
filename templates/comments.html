@@ -4,8 +4,15 @@
 
 {% block content %}
 
-    <h1>Lecturer Comments</h1>
+    <div class="page-heading">
+        <div>
+            <p class="page-eyebrow">Administration</p>
+            <h1>Lecturer Comments</h1>
+            <p class="page-subtitle">Review feedback and timetable issues raised by lecturers.</p>
+        </div>
+    </div>
 
+    <div class="table-wrapper">
     <table border="1">
         <tr>
             <th>Lecturer</th>
@@ -21,8 +28,8 @@
         </tr>
         {% endfor %}
     </table>
+    </div>
 
-    <br>
-    <a href="/admin">Back to Admin Dashboard</a>
+    <p class="page-footer-link"><a href="/admin">Back to Admin Dashboard</a></p>
 
 {% endblock %}

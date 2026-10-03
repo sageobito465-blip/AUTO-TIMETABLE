@@ -11,7 +11,7 @@
         </div>
 
         <div class="form-card-body">
-            <form method="GET" action="/search">
+            <form method="GET" action="/search" class="search-form">
                 <input type="text" name="query" value="{{ query }}" placeholder="Enter lecturer name">
                 <button type="submit">Search</button>
             </form>
@@ -21,6 +21,7 @@
     {% if query %}
     <h2>Results for "{{ query }}"</h2>
 
+    <div class="table-wrapper">
     <table border="1">
         <tr>
             <th>Course Code</th>
@@ -60,6 +61,7 @@
         </tr>
         {% endfor %}
     </table>
+    </div>
     {% endif %}
 
 {% endblock %}

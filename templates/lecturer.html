@@ -4,23 +4,24 @@
 
 {% block content %}
 
-    <div class="form-card-header" style="border-radius: 8px;">
+    <div class="form-card-header dashboard-banner">
         <p class="title">Welcome, {{ lecturer_name }}</p>
         <p class="subtitle">{{ all_classes|length }} classes assigned to you</p>
     </div>
 
-    <div class="form-card" style="margin-top: 16px;">
+    <div class="form-card lecturer-comment-card">
         <div class="form-card-header">
-            <p class="title" style="font-size: 14px;">Leave a Comment</p>
+            <p class="title">Leave a Comment</p>
         </div>
         <div class="form-card-body">
-            <form method="POST" action="/lecturer/comment">
-                <textarea name="message" rows="4" style="width: 100%; box-sizing: border-box; border-radius: 6px; border: 1px solid #ccc; padding: 8px;" placeholder="Write your comment..."></textarea><br><br>
+            <form method="POST" action="/lecturer/comment" class="comment-form">
+                <textarea name="message" rows="4" placeholder="Write your comment..."></textarea>
                 <button type="submit">Submit Comment</button>
             </form>
         </div>
     </div>
 
+    <div class="table-wrapper">
     <table border="1">
         <tr>
             <th>Course Code</th>
@@ -61,5 +62,6 @@
         </tr>
         {% endfor %}
     </table>
+    </div>
 
 {% endblock %}

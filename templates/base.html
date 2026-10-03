@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{% block title %}AUTO-TIMETABLE{% endblock %}</title>
+    <title>{% block title %}MAPOLY Timetable{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
@@ -10,7 +10,7 @@
     <nav class="navbar">
 
         <div class="navbar-brand">
-            {% if session["role"] == "Student" %}MAPOLY Timetable{% else %}AUTO-TIMETABLE{% endif %}
+            MAPOLY Timetable
         </div>
 
         <button class="menu-toggle" onclick="toggleMenu()">
@@ -140,7 +140,16 @@
     }
 
     function toggleDropdown(button) {
-        button.parentElement.classList.toggle("open");
+        const currentDropdown = button.parentElement;
+        const wasOpen = currentDropdown.classList.contains("open");
+
+        document.querySelectorAll("#navLinks .nav-dropdown.open").forEach(function(dropdown) {
+            dropdown.classList.remove("open");
+        });
+
+        if (!wasOpen) {
+            currentDropdown.classList.add("open");
+        }
     }
 </script>
 
