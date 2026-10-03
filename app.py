@@ -302,6 +302,7 @@ def change_password():
 # STUDENT
 # ============================================================
 
+# Show the student timetable
 @app.route("/student")
 @login_required("Student")
 def student_dashboard():
@@ -309,14 +310,15 @@ def student_dashboard():
     username = session["username"]
 
     cursor.execute(
-        "SELECT level, programme FROM users WHERE username = ?",
+        "SELECT full_name, level, programme FROM users WHERE username = ?",
         (username,)
     )
 
     student = cursor.fetchone()
 
-    student_level = student[0]
-    student_programme = student[1]
+    student_name = student[0]
+    student_level = student[1]
+    student_programme = student[2]
 
     selected_level = request.args.get(
         "level",
@@ -327,6 +329,7 @@ def student_dashboard():
         "programme",
         student_programme
     )
+
     selected_semester = request.args.get(
         "semester",
         "Semester 1"
@@ -368,7 +371,7 @@ def student_dashboard():
 
     return render_template(
         "student.html",
-        username=username,
+        username=student_name,
         grid=grid,
         days=days,
         time_slots=time_slots,
@@ -376,6 +379,7 @@ def student_dashboard():
         selected_programme=selected_programme,
         selected_semester=selected_semester
     )
+
 
 
 # ============================================================
