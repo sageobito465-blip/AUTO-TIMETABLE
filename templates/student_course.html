@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Course Details{% endblock %}
+
+{% block content %}
+
+    <section class="student-welcome">
+        <p class="student-eyebrow">Computer Science Timetable</p>
+        <h1>Course Details</h1>
+        <div class="student-summary">
+            <span><strong>Course Code</strong> {{ course_code }}</span>
+            <span><strong>Course Title</strong> {{ course_title }}</span>
+            <span><strong>Level</strong> {{ selected_level }}</span>
+            <span><strong>Programme</strong> {% if sessions and sessions[0].programme %}{{ sessions[0].programme }}{% else %}N/A{% endif %}</span>
+            <span><strong>Semester</strong> {{ selected_semester }}</span>
+        </div>
+    </section>
+
+    <div class="student-controls">
+        <div class="student-controls-heading">
+            <h2>Sessions</h2>
+        </div>
+        <div class="student-controls-body">
+            {% if sessions %}
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Session Type</th>
+                            <th>Lecturer</th>
+                            <th>Lecturer Title</th>
+                            <th>Day</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Venue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for class_session in sessions %}
+                        <tr>
+                            <td>{{ class_session.session_type }}</td>
+                            <td>{{ class_session.lecturer_name }}</td>
+                            <td>{{ class_session.lecturer_title }}</td>
+                            <td>{{ class_session.day }}</td>
+                            <td>{{ class_session.start_time }}</td>
+                            <td>{{ class_session.end_time }}</td>
+                            <td>{{ class_session.venue or "N/A" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No sessions found for this course and timetable selection.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <p><a href="{{ url_for('student_dashboard', level=selected_level, programme=selected_programme, semester=selected_semester) }}">Back to Timetable</a></p>
+
+{% endblock %}

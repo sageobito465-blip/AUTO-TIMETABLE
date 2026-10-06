@@ -21,6 +21,16 @@
         </div>
     </div>
 
+    <section class="form-card">
+        <div class="form-card-header">
+            <p class="title">View All Timetables</p>
+        </div>
+        <div class="form-card-body">
+            <a class="primary-link" href="/timetable/grid">View All Timetables</a>
+        </div>
+    </section>
+
+    <h1>My Assigned Courses</h1>
     <div class="table-wrapper">
     <table border="1">
         <tr>
@@ -38,10 +48,8 @@
         {% for class in all_classes %}
         <tr>
             <td>{{ class[0] }}</td>
-            <td>{{ course_titles.get(class[0], "Unknown Course") }}</td>
-
+            <td>{{ course_titles.get(class[0], "Unassigned") }}</td>
             <td>{{ class[1] }}</td>
-
             <td>
                 {% if class[2] == "ND1" %}
                     <span class="badge badge-nd1">ND1</span>
@@ -53,7 +61,6 @@
                     <span class="badge badge-hnd2">HND2</span>
                 {% endif %}
             </td>
-
             <td>{{ class[3] }}</td>
             <td>{{ class[4] }}</td>
             <td>{{ class[5] }}</td>

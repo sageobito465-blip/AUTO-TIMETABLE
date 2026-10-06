@@ -10,7 +10,7 @@ Moshood Abiola Polytechnic (MAPOLY)
 This file contains every route (page/URL) in the app.
 """
 
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, url_for
 from database import connection, cursor
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -381,6 +381,119 @@ def student_dashboard():
     )
 
 
+# Show details for a student course
+@app.route("/student/course/<course_code>")
+@login_required("Student")
+def student_course_details(course_code):
+
+    selected_level = request.args.get("level", "")
+    selected_programme = request.args.get("programme", "")
+    selected_semester = request.args.get("semester", "")
+
+    if selected_programme:
+
+        cursor.execute(
+            """SELECT course_code, session_type, day, start_time, end_time,
+                      venue, lecturer_name, lecturer_title, programme
+               FROM timetable
+               WHERE course_code = ?
+               AND level = ?
+               AND programme = ?
+               AND semester = ?""",
+            (course_code, selected_level, selected_programme, selected_semester)
+        )
+
+    else:
+
+        cursor.execute(
+            """SELECT course_code, session_type, day, start_time, end_time,
+                      venue, lecturer_name, lecturer_title, programme
+               FROM timetable
+               WHERE course_code = ?
+               AND level = ?
+               AND semester = ?""",
+            (course_code, selected_level, selected_semester)
+        )
+
+    sessions = []
+
+    for row in cursor.fetchall():
+
+        lecturer_name = row[6]
+        lecturer_title = row[7]
+        lecturer_semester = (
+            "First Semester" if selected_semester == "Semester 1"
+            else "Second Semester"
+        )
+
+        if not lecturer_name or not lecturer_title:
+
+            if selected_programme:
+                cursor.execute(
+                    """SELECT lecturers.full_name, lecturers.title
+                       FROM lecturer_courses
+                       JOIN lecturers
+                       ON lecturer_courses.lecturer_id = lecturers.id
+                       WHERE lecturer_courses.course_code = ?
+                       AND lecturer_courses.session_type = ?
+                       AND lecturer_courses.semester = ?
+                       AND EXISTS (
+                           SELECT 1 FROM timetable
+                           WHERE timetable.course_code = lecturer_courses.course_code
+                           AND timetable.session_type = lecturer_courses.session_type
+                           AND timetable.level = ?
+                           AND timetable.programme = ?
+                           AND timetable.semester = ?
+                       )""",
+                    (row[0], row[1], lecturer_semester, selected_level, selected_programme, selected_semester)
+                )
+            else:
+                cursor.execute(
+                    """SELECT lecturers.full_name, lecturers.title
+                       FROM lecturer_courses
+                       JOIN lecturers
+                       ON lecturer_courses.lecturer_id = lecturers.id
+                       WHERE lecturer_courses.course_code = ?
+                       AND lecturer_courses.session_type = ?
+                       AND lecturer_courses.semester = ?
+                       AND EXISTS (
+                           SELECT 1 FROM timetable
+                           WHERE timetable.course_code = lecturer_courses.course_code
+                           AND timetable.session_type = lecturer_courses.session_type
+                           AND timetable.level = ?
+                           AND timetable.semester = ?
+                       )""",
+                    (row[0], row[1], lecturer_semester, selected_level, selected_semester)
+                )
+
+            lecturer = cursor.fetchone()
+
+            if lecturer:
+                lecturer_name = lecturer_name or lecturer[0]
+                lecturer_title = lecturer_title or lecturer[1]
+
+        sessions.append({
+            "session_type": row[1],
+            "lecturer_name": lecturer_name or "Unassigned",
+            "lecturer_title": lecturer_title or "Unassigned",
+            "day": row[2],
+            "start_time": row[3],
+            "end_time": row[4],
+            "venue": row[5],
+            "programme": row[8]
+        })
+
+    return render_template(
+        "student_course.html",
+        course_code=course_code,
+        course_title=COURSE_TITLES.get(course_code, "Unassigned"),
+        selected_level=selected_level,
+        selected_programme=selected_programme,
+        selected_semester=selected_semester,
+        sessions=sessions
+    )
+
+
 
 # ============================================================
 # LECTURER
@@ -465,7 +578,7 @@ def search_lecturer():
 
         course_title = COURSE_TITLES.get(
             course_code,
-            "Unknown Course"
+            "Unassigned"
         )
 
         results.append(row + (course_title,))
@@ -522,7 +635,7 @@ def search_course():
 
             course_title = COURSE_TITLES.get(
                 course_code,
-                "Unknown Course"
+                "Unassigned"
             )
 
             results.append(
@@ -549,15 +662,29 @@ def timetable_grid():
     if "username" not in session:
         return redirect("/login")
 
-    level = request.args.get("level", "ND2")
+    selected_level = request.args.get("level", "ND2")
+    selected_programme = request.args.get("programme", "")
+    selected_semester = request.args.get("semester", "Semester 1")
 
-    cursor.execute(
-        """SELECT course_code, session_type, day, start_time, end_time,
-                  venue, lecturer_name, lecturer_title
-           FROM timetable
-           WHERE level = ?""",
-        (level,)
-    )
+    if selected_programme:
+        cursor.execute(
+            """SELECT course_code, session_type, day, start_time, end_time,
+                      venue, lecturer_name, lecturer_title
+               FROM timetable
+               WHERE level = ?
+               AND programme = ?
+               AND semester = ?""",
+            (selected_level, selected_programme, selected_semester)
+        )
+    else:
+        cursor.execute(
+            """SELECT course_code, session_type, day, start_time, end_time,
+                      venue, lecturer_name, lecturer_title
+               FROM timetable
+               WHERE level = ?
+               AND semester = ?""",
+            (selected_level, selected_semester)
+        )
 
     all_classes = cursor.fetchall()
 
@@ -568,7 +695,10 @@ def timetable_grid():
         grid=grid,
         days=days,
         time_slots=time_slots,
-        level=level
+        level=selected_level,
+        selected_level=selected_level,
+        selected_programme=selected_programme,
+        selected_semester=selected_semester
     )
 
 
@@ -1099,8 +1229,9 @@ def generate_timetable(level, programme=None, semester="Semester 1"):
                    JOIN lecturers
                    ON lecturer_courses.lecturer_id = lecturers.id
                    WHERE lecturer_courses.course_code = ?
-                   AND lecturer_courses.session_type = ?""",
-                (course_code, session_type)
+                   AND lecturer_courses.session_type = ?
+                   AND lecturer_courses.semester = ?""",
+                (course_code, session_type, semester)
             )
 
             possible_lecturers = cursor.fetchall()

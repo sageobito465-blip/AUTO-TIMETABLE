@@ -6,6 +6,34 @@
 
     <h1>{{ level }} Timetable</h1>
 
+    <form method="GET" action="/timetable/grid" class="student-filter-form">
+        <div class="student-filter-field">
+            <label for="level">Level</label>
+            <select id="level" name="level">
+                <option value="ND1" {% if selected_level == "ND1" %}selected{% endif %}>ND1</option>
+                <option value="ND2" {% if selected_level == "ND2" %}selected{% endif %}>ND2</option>
+                <option value="HND1" {% if selected_level == "HND1" %}selected{% endif %}>HND1</option>
+                <option value="HND2" {% if selected_level == "HND2" %}selected{% endif %}>HND2</option>
+            </select>
+        </div>
+        <div class="student-filter-field">
+            <label for="programme">Programme</label>
+            <select id="programme" name="programme">
+                <option value="" {% if not selected_programme %}selected{% endif %}>N/A</option>
+                <option value="NCC" {% if selected_programme == "NCC" %}selected{% endif %}>NCC</option>
+                <option value="SWD" {% if selected_programme == "SWD" %}selected{% endif %}>SWD</option>
+            </select>
+        </div>
+        <div class="student-filter-field">
+            <label for="semester">Semester</label>
+            <select id="semester" name="semester">
+                <option value="Semester 1" {% if selected_semester == "Semester 1" %}selected{% endif %}>Semester 1</option>
+                <option value="Semester 2" {% if selected_semester == "Semester 2" %}selected{% endif %}>Semester 2</option>
+            </select>
+        </div>
+        <button type="submit">View</button>
+    </form>
+
     <div class="table-wrapper timetable-table-wrapper">
     <table border="1">
         <tr>
@@ -25,7 +53,7 @@
                     <strong>{{ class_row[0] }}</strong>
                     {% if class_row[1] == "Practical" %}(P){% endif %}<br>
                     {% if class_row[5] %}V: {{ class_row[5] }}<br>{% endif %}
-                    {% if class_row[6] %}{{ class_row[7] }}: {{ class_row[6] }}{% endif %}
+                    {% if class_row[6] %}{% if class_row[7] %}{{ class_row[7] }}: {% endif %}{{ class_row[6] }}{% endif %}
                 {% else %}
                     -
                 {% endif %}

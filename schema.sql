@@ -31,6 +31,7 @@ CREATE TABLE timetable (
     session_type ENUM('Lecture', 'Practical') DEFAULT 'Lecture',
     programme VARCHAR(20),                        -- NCC / SWD, only relevant for HND1/HND2 rows
     level VARCHAR(20) NOT NULL,                   -- ND1 / ND2 / HND1 / HND2
+    semester VARCHAR(20) NOT NULL,                 -- 'Semester 1' or 'Semester 2'
     day VARCHAR(20) NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
@@ -63,6 +64,8 @@ CREATE TABLE lecturer_courses (
     id INT AUTO_INCREMENT PRIMARY KEY,
     lecturer_id INT NOT NULL,
     course_code VARCHAR(50) NOT NULL,
+    session_type VARCHAR(20) NOT NULL,
+    semester VARCHAR(20) NOT NULL,
     FOREIGN KEY (lecturer_id) REFERENCES lecturers(id)
 );
 
@@ -71,6 +74,8 @@ CREATE TABLE course_requirements (
     course_code VARCHAR(50) NOT NULL,
     level VARCHAR(20) NOT NULL,
     programme VARCHAR(20),
+    -- course_requirements uses 'First Semester' or 'Second Semester'
+    semester VARCHAR(20) NOT NULL,
     lectures_per_week INT DEFAULT 1,
     practicals_per_week INT DEFAULT 0
 );
@@ -95,29 +100,30 @@ CREATE TABLE venues (
 -- ('Mr Olatunji', 'T'),
 -- ('Mr Paul', 'T'),
 -- ('Mr Salawu', 'L'),
--- ('Mr Faleti', 'L'),
--- ('Mr Moses', 'T');
+-- ('MR. FALETI', NULL),
+-- ('Mr Moses', NULL);
 
--- INSERT INTO lecturer_courses (lecturer_id, course_code) VALUES
--- ((SELECT id FROM lecturers WHERE full_name = 'Mr Adebesin'), 'COM223'),
--- ((SELECT id FROM lecturers WHERE full_name = 'Mr Raji'), 'COM221'),
--- ((SELECT id FROM lecturers WHERE full_name = 'Dr Orunsolu'), 'COM228'),
--- ((SELECT id FROM lecturers WHERE full_name = 'Mr Olatunji'), 'COM224'),
--- ((SELECT id FROM lecturers WHERE full_name = 'Mr Paul'), 'COM225'),
--- ((SELECT id FROM lecturers WHERE full_name = 'Mr Paul'), 'COM221'),
--- ((SELECT id FROM lecturers WHERE full_name = 'Mr Salawu'), 'COM227'),
--- ((SELECT id FROM lecturers WHERE full_name = 'Mr Faleti'), 'GNS202'),
--- ((SELECT id FROM lecturers WHERE full_name = 'Mr Moses'), 'COM226');
+-- INSERT INTO lecturer_courses (lecturer_id, course_code, session_type, semester) VALUES
+-- ((SELECT id FROM lecturers WHERE full_name = 'Mr Adebesin'), 'COM223', 'Practical', 'Second Semester'),
+-- ((SELECT id FROM lecturers WHERE full_name = 'Mr Raji'), 'COM221', 'Lecture', 'Second Semester'),
+-- ((SELECT id FROM lecturers WHERE full_name = 'Dr Orunsolu'), 'COM228', 'Lecture', 'Second Semester'),
+-- ((SELECT id FROM lecturers WHERE full_name = 'Mr Olatunji'), 'COM224', 'Practical', 'Second Semester'),
+-- ((SELECT id FROM lecturers WHERE full_name = 'Mr Paul'), 'COM225', 'Practical', 'Second Semester'),
+-- ((SELECT id FROM lecturers WHERE full_name = 'Mr Paul'), 'COM221', 'Practical', 'Second Semester'),
+-- ((SELECT id FROM lecturers WHERE full_name = 'Mr Salawu'), 'COM227', 'Lecture', 'Second Semester'),
+-- ((SELECT id FROM lecturers WHERE full_name = 'MR. FALETI'), 'GNS202', 'Lecture', 'Second Semester'),
+-- ((SELECT id FROM lecturers WHERE full_name = 'Mr Moses'), 'COM226', 'Practical', 'Second Semester');
 
--- INSERT INTO course_requirements (course_code, level, programme, lectures_per_week, practicals_per_week) VALUES
--- ('COM221', 'ND2', NULL, 1, 1),
--- ('COM223', 'ND2', NULL, 1, 1),
--- ('COM224', 'ND2', NULL, 1, 1),
--- ('COM225', 'ND2', NULL, 1, 1),
--- ('COM227', 'ND2', NULL, 1, 0),
--- ('COM228', 'ND2', NULL, 1, 0),
--- ('GNS202', 'ND2', NULL, 1, 0),
--- ('COM226', 'ND2', NULL, 1, 1);
+-- timetable.semester uses 'Semester 1' or 'Semester 2'
+-- INSERT INTO course_requirements (course_code, level, programme, semester, lectures_per_week, practicals_per_week) VALUES
+-- ('COM221', 'ND2', NULL, 'Second Semester', 1, 1),
+-- ('COM223', 'ND2', NULL, 'Second Semester', 1, 1),
+-- ('COM224', 'ND2', NULL, 'Second Semester', 1, 1),
+-- ('COM225', 'ND2', NULL, 'Second Semester', 1, 1),
+-- ('COM227', 'ND2', NULL, 'Second Semester', 1, 0),
+-- ('COM228', 'ND2', NULL, 'Second Semester', 1, 0),
+-- ('GNS202', 'ND2', NULL, 'Second Semester', 1, 0),
+-- ('COM226', 'ND2', NULL, 'Second Semester', 1, 1);
 
 -- INSERT INTO venues (name, venue_type) VALUES
 -- ('COM RM 2', 'Lecture Room'),

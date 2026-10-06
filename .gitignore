@@ -1,5 +1,7 @@
 *.sql
+!database/migrations/*.sql
 __pycache__/
 venv/
 *.pyc
 .env
+database/backup_*.sql

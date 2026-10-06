@@ -5,7 +5,7 @@
 {% block content %}
 
     <section class="student-welcome">
-        <p class="student-eyebrow">MAPOLY Timetable</p>
+        <p class="student-eyebrow">Computer Science Timetable</p>
         <h1>Welcome, {{ username }}</h1>
         <p class="student-context">Your timetable</p>
         <div class="student-summary">
@@ -64,7 +64,7 @@
                 <div class="student-slot-cell{% if class_row and class_row[1] == 'Practical' %} practical{% endif %}{% if not class_row %} is-empty{% endif %}">
                     <div class="slot-time">{{ slot[0][:5] }} - {{ slot[1][:5] }}</div>
                     {% if class_row %}
-                        <strong class="student-course-code">{{ class_row[0] }}</strong>{% if class_row[1] == "Practical" %}<span class="practical-badge">Practical (P)</span>{% endif %}
+                        <strong class="student-course-code"><a href="{{ url_for('student_course_details', course_code=class_row[0], level=selected_level, programme=selected_programme, semester=selected_semester) }}">{{ class_row[0] }}</a></strong>{% if class_row[1] == "Practical" %}<span class="practical-badge">Practical (P)</span>{% endif %}
                         {% if class_row[5] %}<span class="slot-venue">{{ class_row[5] }}</span>{% endif %}
                         {% if class_row[6] %}<span class="slot-lecturer">{{ class_row[6] }}</span>{% endif %}
                     {% else %}
