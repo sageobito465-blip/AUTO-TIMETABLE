@@ -37,6 +37,16 @@ def connect_database():
                 "ssl_verify_cert": True
             })
 
+
+        print("DB DEBUG:")
+        print("HOST:", repr(connection_options["host"]))
+        print("PORT:", repr(connection_options["port"]))
+        print("USER:", repr(connection_options["user"]))
+        print("DATABASE:", repr(connection_options["database"]))
+        print("PASSWORD SET:", bool(connection_options["password"]))
+        print("PASSWORD LENGTH:", len(connection_options["password"] or ""))
+        print("SSL CA SET:", bool(connection_options.get("ssl_ca")))
+        
         connection = mariadb.connect(**connection_options)
 
         print("Database Connected Successfully!")
