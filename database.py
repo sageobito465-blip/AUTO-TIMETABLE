@@ -34,8 +34,7 @@ def connect_database():
         if ssl_ca:
             connection_options.update({
                 "ssl_ca": ssl_ca,
-                "ssl_verify_cert": True,
-                "ssl_verify_identity": True
+                "ssl_verify_cert": True
             })
 
         connection = mariadb.connect(**connection_options)
