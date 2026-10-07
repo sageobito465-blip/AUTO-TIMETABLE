@@ -21,12 +21,24 @@ def connect_database():
 
     try:
 
-        connection = mariadb.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
+        connection_options = {
+            "host": os.getenv("DB_HOST"),
+            "port": int(os.getenv("DB_PORT", "3306")),
+            "user": os.getenv("DB_USER"),
+            "password": os.getenv("DB_PASSWORD"),
+            "database": os.getenv("DB_NAME")
+        }
+
+        ssl_ca = os.getenv("DB_SSL_CA")
+
+        if ssl_ca:
+            connection_options.update({
+                "ssl_ca": ssl_ca,
+                "ssl_verify_cert": True,
+                "ssl_verify_identity": True
+            })
+
+        connection = mariadb.connect(**connection_options)
 
         print("Database Connected Successfully!")
 
